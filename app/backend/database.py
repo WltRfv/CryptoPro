@@ -112,7 +112,6 @@ class Transaction(db.Model):
     team_id = db.Column(db.Integer, db.ForeignKey('teams.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
 
-
 def init_db(app):
     db.init_app(app)
     with app.app_context():

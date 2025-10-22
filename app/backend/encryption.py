@@ -4,7 +4,6 @@ from cryptography.fernet import Fernet
 import base64
 from secretsharing import SecretSharer
 
-
 class EncryptionManager:
     def __init__(self):
         self.key = None
