@@ -20,50 +20,66 @@ class AuthManager:
         """
         Инициирует процесс входа для команды - отправляет ключи на все email
         """
-        print("🔄 Инициируем вход команды...")
+        try:
+            print("🔄 Инициируем вход команды...")
+            print(f"📧 Порядок email в конфиге: {AuthManager.TEAM_EMAILS}")
 
-        # Создаем токен сессии
-        session_token = shamir_manager.generate_session_token()
+            # Создаем токен сессии
+            session_token = shamir_manager.generate_session_token()
 
-        # Создаем мастер-ключ для этой сессии
-        master_key = secrets.token_urlsafe(32)
+            # Создаем мастер-ключ для этой сессии
+            master_key = secrets.token_urlsafe(32)
 
-        # Разделяем ключ на 4 части (порядок важен!)
-        shares = shamir_manager.split_secret(master_key, shares=4, threshold=3)
+            # Разделяем ключ на 4 части (порядок важен!)
+            shares = shamir_manager.split_secret(master_key, shares=4, threshold=3)
 
-        # Создаем запись сессии
-        login_session = LoginSession(
-            session_token=session_token,
-            expires_at=datetime.utcnow() + timedelta(minutes=15)
-        )
-        db.session.add(login_session)
-        db.session.flush()
+            # ОТЛАДКА: покажем какой ключ кому отправляется
+            print("🔑 РАСПРЕДЕЛЕНИЕ КЛЮЧЕЙ:")
+            for i, email in enumerate(AuthManager.TEAM_EMAILS):
+                print(f"   {email} → Ключ {i + 1}: {shares[i][:20]}...")
 
-        # Сохраняем ключи в базу и отправляем на email
-        email_count = 0
-        for i, email in enumerate(AuthManager.TEAM_EMAILS):
-            key_share = KeyShare(
-                share=shares[i],
-                email=email,
-                share_order=i + 1,  # Порядок 1,2,3,4
-                session_id=login_session.id
+            # Создаем запись сессии
+            login_session = LoginSession(
+                session_token=session_token,
+                expires_at=datetime.utcnow() + timedelta(minutes=15)
             )
-            db.session.add(key_share)
+            db.session.add(login_session)
+            db.session.flush()
 
-            # Отправляем email с ключом
-            if email_service.send_key_share(email, shares[i], session_token):
-                email_count += 1
-                print(f"✅ Ключ {i + 1} отправлен на {email}")
+            # Сохраняем ключи в базу и отправляем на email
+            email_count = 0
+            for i, email in enumerate(AuthManager.TEAM_EMAILS):
+                print(f"📨 Отправка ключа {i + 1} на {email}: {shares[i]}")
 
-        db.session.commit()
+                key_share = KeyShare(
+                    share=shares[i],
+                    email=email,
+                    share_order=i + 1,  # Порядок 1,2,3,4
+                    session_id=login_session.id
+                )
+                db.session.add(key_share)
 
-        # Сохраняем ключи в файл для тестирования
-        AuthManager._save_test_keys(shares, session_token)
+                # Отправляем email с ключом
+                if email_service.send_key_share(email, shares[i], session_token):
+                    email_count += 1
+                    print(f"✅ Ключ {i + 1} отправлен на {email}")
+                else:
+                    print(f"❌ Ошибка отправки ключа {i + 1} на {email}")
 
-        if email_count > 0:
-            return session_token, f"Ключи отправлены на {email_count} email адресов! Также сохранены в файл test_keys.txt"
-        else:
-            return session_token, "Ключи сохранены в файл test_keys.txt (проверьте настройки email)"
+            db.session.commit()
+
+            # Сохраняем ключи в файл для тестирования
+            AuthManager._save_test_keys(shares, session_token)
+
+            if email_count > 0:
+                return session_token, f"Ключи отправлены на {email_count} email адресов! Также сохранены в файл test_keys.txt"
+            else:
+                return session_token, "Ключи сохранены в файл test_keys.txt (проверьте настройки email)"
+
+        except Exception as e:
+            print(f"❌ КРИТИЧЕСКАЯ ОШИБКА в initiate_team_login: {e}")
+            # Возвращаем значения по умолчанию чтобы не ломать интерфейс
+            return "ERROR", f"Ошибка при отправке ключей: {str(e)}"
 
     @staticmethod
     def _save_test_keys(shares, session_token):
@@ -76,7 +92,7 @@ class AuthManager:
                 f.write(f"Время генерации: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}\n\n")
                 f.write("Ключи (введите ЛЮБЫЕ 3 из 4 через пробел):\n")
 
-                # Записываем ключи с указанием email
+                # Записываем ключи с указанием email и номера
                 emails = ["samonov.135@gmail.com", "galkinasnezana788@gmail.com",
                           "lesa85130@gmail.com", "pravolavika@gmail.com"]
 
@@ -84,7 +100,12 @@ class AuthManager:
                     f.write(f"Ключ {i} ({emails[i - 1]}): {share}\n")
 
                 f.write("\n💡 ДОПУСТИМЫЕ КОМБИНАЦИИ:\n")
-                f.write("1-2-3, 1-2-4, 1-3-4, 2-3-4\n")
+                f.write("1-2-3, 1-2-4, 1-3-4, 2-3-4\n\n")
+                f.write("📋 ТЕСТОВЫЕ КОМБИНАЦИИ (скопируйте и вставьте):\n")
+                f.write(f"1-2-3: {shares[0]} {shares[1]} {shares[2]}\n")
+                f.write(f"1-2-4: {shares[0]} {shares[1]} {shares[3]}\n")
+                f.write(f"1-3-4: {shares[0]} {shares[2]} {shares[3]}\n")
+                f.write(f"2-3-4: {shares[1]} {shares[2]} {shares[3]}\n")
                 f.write("=" * 60 + "\n")
 
             print("✅ Ключи сохранены в файл test_keys.txt")

@@ -5,7 +5,7 @@ from app.backend.database import db
 from app.backend.email_service import email_service
 
 login_manager = LoginManager()
-login_manager.login_view = 'frontend.team_login'
+login_manager.login_view = 'frontend.team_login'  # ВАЖНО: должно быть 'frontend.team_login'
 login_manager.login_message = 'Пожалуйста, войдите в систему'
 
 

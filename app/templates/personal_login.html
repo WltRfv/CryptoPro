@@ -1,29 +1,33 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div style="max-width: 400px; margin: 100px auto;">
+<div style="max-width: 450px; margin: 80px auto;">
     <div class="card">
-        <div style="text-align: center; margin-bottom: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
             <h1>👤 Личный вход</h1>
-            <p>Войдите в личный кабинет</p>
+            <p style="color: #8fa8bf;">Войдите в личный кабинет</p>
         </div>
 
         <form method="POST">
             <div class="form-group">
                 <label for="member_name">Имя участника:</label>
-                <input type="text" id="member_name" name="member_name" required placeholder="Например: Самонов">
+                <input type="text" id="member_name" name="member_name" required
+                       placeholder="Например: Самонов">
             </div>
 
             <div class="form-group">
                 <label for="personal_password">Личный пароль:</label>
-                <input type="password" id="personal_password" name="personal_password" required placeholder="Введите ваш пароль">
+                <input type="password" id="personal_password" name="personal_password" required
+                       placeholder="Введите ваш пароль">
             </div>
 
-            <button type="submit" class="btn" style="width: 100%;">Войти в личный кабинет</button>
+            <button type="submit" class="btn btn-success" style="width: 100%;">
+                🌟 Войти в личный кабинет
+            </button>
         </form>
 
-        <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
-            <a href="{{ url_for('frontend.team_login') }}" class="btn" style="background: #6c757d; width: 100%;">
+        <div style="text-align: center; margin-top: 25px; padding-top: 25px; border-top: 1px solid #f0f4f8;">
+            <a href="{{ url_for('frontend.team_login') }}" class="btn" style="width: 100%;">
                 ← Назад к входу команды
             </a>
         </div>

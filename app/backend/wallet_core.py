@@ -6,34 +6,59 @@ class WalletCore:
     @staticmethod
     def get_team_dashboard(team_id):
         """Получает данные для дашборда команды"""
+        print(f"📊 Получение дашборда для команды {team_id}")
+
         team = Team.query.get(team_id)
         if not team:
+            print("❌ Команда не найдена")
             return None
-
-        # Получаем купленные вопросы с информацией о покупателе
-        purchased_questions = db.session.query(QuestionPurchase, Question, Member).\
-            join(Question, QuestionPurchase.question_id == Question.id).\
-            join(Member, QuestionPurchase.purchased_by == Member.id).\
-            filter(QuestionPurchase.team_id == team_id).all()
-
-        # Получаем переводы с информацией об отправителе и получателе
-        transfers = db.session.query(Transfer, Member.label('from_member'), Member.label('to_member')).\
-            join(Member, Transfer.from_member_id == Member.id).\
-            join(Member, Transfer.to_member_id == Member.id).\
-            filter(Transfer.team_id == team_id).\
-            order_by(Transfer.transferred_at.desc()).limit(10).all()
-
-        # Получаем доступные вопросы
-        available_questions = Question.query.filter_by(is_approved=True).all()
 
         # Получаем участников команды
         members = Member.query.filter_by(team_id=team_id).all()
+        print(f"👥 Найдено участников: {len(members)}")
+
+        # Получаем доступные вопросы
+        available_questions = Question.query.filter_by(is_approved=True).all()
+        print(f"📚 Доступно вопросов: {len(available_questions)}")
+
+        # Получаем предложенные вопросы (все, даже не одобренные)
+        proposed_questions = Question.query.filter_by(is_approved=False).all()
+        print(f"💡 Предложено вопросов: {len(proposed_questions)}")
+
+        # ИСПРАВЛЕННЫЙ ЗАПРОС купленных вопросов
+        purchased_questions_data = []
+        purchased_questions = QuestionPurchase.query.filter_by(team_id=team_id).all()
+        for purchase in purchased_questions:
+            question = Question.query.get(purchase.question_id)
+            purchaser = Member.query.get(purchase.purchased_by)
+            if question and purchaser:
+                purchased_questions_data.append({
+                    'question': question,
+                    'purchaser': purchaser,
+                    'purchase': purchase
+                })
+        print(f"🛒 Купленных вопросов: {len(purchased_questions_data)}")
+
+        # ИСПРАВЛЕННЫЙ ЗАПРОС переводов
+        transfers_data = []
+        transfers = Transfer.query.filter_by(team_id=team_id).order_by(Transfer.transferred_at.desc()).limit(10).all()
+        for transfer in transfers:
+            from_member = Member.query.get(transfer.from_member_id)
+            to_member = Member.query.get(transfer.to_member_id)
+            if from_member and to_member:
+                transfers_data.append({
+                    'transfer': transfer,
+                    'from_member': from_member,
+                    'to_member': to_member
+                })
+        print(f"📊 Переводов в истории: {len(transfers_data)}")
 
         return {
             'team': team,
             'members': members,
-            'purchased_questions': purchased_questions,
-            'transfers': transfers,
+            'purchased_questions': purchased_questions_data,
+            'proposed_questions': proposed_questions,
+            'transfers': transfers_data,
             'available_questions': available_questions,
             'total_team_points': sum(member.points for member in members)
         }
@@ -134,7 +159,8 @@ class WalletCore:
             question = Question(
                 content=content,
                 price=price,
-                is_approved=False  # Требует модерации
+                is_approved=False,  # Требует модерации
+                created_by=member_id
             )
             db.session.add(question)
             db.session.commit()

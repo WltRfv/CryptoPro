@@ -1,70 +1,73 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div style="max-width: 500px; margin: 50px auto;">
-    <div class="card">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <h1>🔐 CryptoPro Кошелек</h1>
-            <p>Доступ только через ключи участников</p>
+<div style="max-width: 600px; margin: 40px auto;">
+    <div class="card" style="text-align: center;">
+        <div style="margin-bottom: 30px;">
+            <h1>🚀 CryptoPro Кошелек</h1>
+            <p style="color: #667eea; font-size: 1.1em; font-weight: 600;">Доступ только через ключи участников</p>
         </div>
 
         <form method="POST">
-            <button type="submit" class="btn" style="width: 100%;">
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
                 📧 Отправить ключи на почту участникам
             </button>
         </form>
 
         {% if session_token %}
-        <div style="margin-top: 20px; padding: 15px; background: #e7f3ff; border-radius: 8px;">
-            <h3>✅ Ключи отправлены!</h3>
-            <p>Токен сессии: <strong>{{ session_token }}</strong></p>
-            <p>Проверьте почту всех участников и введите полученные ключи ниже:</p>
+        <div class="info-box" style="margin-top: 25px;">
+            <h3 style="color: #1a535c; margin-bottom: 10px;">✅ Ключи отправлены!</h3>
+            <p style="margin-bottom: 8px; font-weight: 600;">Токен сессии: <strong>{{ session_token }}</strong></p>
+            <p style="font-size: 0.95em; color: #1a535c;">Проверьте почту всех участников</p>
         </div>
         {% endif %}
     </div>
 
     <!-- Форма ввода ключей -->
-    <div class="card" style="margin-top: 20px;">
+    <div class="card">
         <h2>🔑 Ввод ключей</h2>
         <form id="verifyForm">
             <div class="form-group">
-                <label for="keys_input">Введите ключи (минимум 3):</label>
-                <textarea id="keys_input" name="keys_input" rows="4" placeholder="Вставьте сюда ключи, полученные на почту. Разделяйте пробелом или запятой." required></textarea>
+                <label for="keys_input">Введите ключи (минимум 3 из 4):</label>
+                <textarea id="keys_input" name="keys_input" rows="4"
+                         class="key-input"
+                         placeholder="Вставьте сюда ключи, полученные на почту. Разделяйте пробелом или запятой..."
+                         required></textarea>
             </div>
 
             {% if session_token %}
             <input type="hidden" id="session_token" name="session_token" value="{{ session_token }}">
             {% endif %}
 
-            <button type="submit" class="btn" style="width: 100%;">
-                🔓 Войти в кошелек
+            <button type="submit" class="btn btn-success" style="width: 100%;">
+                🚀 Войти в кошелек
             </button>
         </form>
 
         <div id="result" style="margin-top: 20px;"></div>
     </div>
 
-    <div class="card" style="margin-top: 20px; background: #f8f9fa;">
-        <h3>📋 Информация</h3>
-        <p><strong>Участники команды:</strong></p>
-        <ul>
-            <li>samonov.135@gmail.com</li>
-            <li>galkinasnezana788@gmail.com</li>
-            <li>lesa85130@gmail.com</li>
-            <li>pravolavika@gmail.com</li>
-        </ul>
-        <p><strong>Для входа нужно минимум 3 ключа из 4</strong></p>
+    <div class="card info-box">
+        <h3>📧 Участники команды</h3>
+        <div class="email-list">
+            <div class="email-item">samonov.135@gmail.com</div>
+            <div class="email-item">galkinasnezana788@gmail.com</div>
+            <div class="email-item">lesa85130@gmail.com</div>
+            <div class="email-item">pravolavika@gmail.com</div>
+        </div>
     </div>
 </div>
 
 <script>
 document.getElementById('verifyForm').addEventListener('submit', function(e) {
     e.preventDefault();
-
     const formData = new FormData(this);
+    const button = this.querySelector('button');
     const resultDiv = document.getElementById('result');
 
-    resultDiv.innerHTML = '<div class="alert">🔍 Проверяем ключи...</div>';
+    button.disabled = true;
+    button.textContent = '🔍 Проверяем ключи...';
+    resultDiv.innerHTML = '<div class="alert alert-info">🔍 Проверяем комбинацию ключей...</div>';
 
     fetch('/verify-keys', {
         method: 'POST',
@@ -73,15 +76,21 @@ document.getElementById('verifyForm').addEventListener('submit', function(e) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            resultDiv.innerHTML = '<div class="alert alert-success">' + data.message + '</div>';
-            // НЕМЕДЛЕННЫЙ РЕДИРЕКТ
-            window.location.href = data.redirect_url;
+            resultDiv.innerHTML = '<div class="alert alert-success">' + data.message + ' Перенаправляем в кошелек... 🚀</div>';
+            button.textContent = '✅ Успешно!';
+            setTimeout(() => {
+                window.location.href = data.redirect_url;
+            }, 1500);
         } else {
             resultDiv.innerHTML = '<div class="alert alert-error">' + data.message + '</div>';
+            button.disabled = false;
+            button.textContent = '🚀 Войти в кошелек';
         }
     })
     .catch(error => {
-        resultDiv.innerHTML = '<div class="alert alert-error">Ошибка: ' + error + '</div>';
+        resultDiv.innerHTML = '<div class="alert alert-error">Ошибка соединения: ' + error + '</div>';
+        button.disabled = false;
+        button.textContent = '🚀 Войти в кошелек';
     });
 });
 </script>
