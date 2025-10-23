@@ -23,18 +23,27 @@
 
 <!-- Статистика команды -->
 <div class="stats-grid">
+    <!-- Команда CryptoPro -->
+    <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <h3 style="color: white;">👥 Команда CryptoPro</h3>
+        <div style="margin-top: 20px;">
+            {% for member in members %}
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                <span style="font-weight: 600;">{{ member.name }}</span>
+                <span style="font-weight: 700; color: #a8e6cf;">{{ member.points }} баллов</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Общие баллы команды -->
     <div class="stat-card">
-        <h3>🏆 Баллы команды</h3>
+        <h3>🏆 Общие баллы</h3>
         <div class="stat-number">{{ team.total_points }}</div>
         <p>Всего баллов у команды</p>
     </div>
 
-    <div class="stat-card">
-        <h3>👥 Участники</h3>
-        <div class="stat-number">{{ members|length }}</div>
-        <p>Человек в команде</p>
-    </div>
-
+    <!-- Личные баллы -->
     <div class="stat-card">
         <h3>💼 Личные баллы</h3>
         <div class="stat-number">
@@ -112,18 +121,48 @@
                 <span style="font-weight: bold; color: #667eea; font-size: 1.2em;">
                     {{ question.price }} баллов
                 </span>
-                <form method="POST" action="{{ url_for('frontend.purchase_question') }}" style="margin: 0;">
-                    <input type="hidden" name="question_id" value="{{ question.id }}">
-                    <button type="submit" class="btn btn-primary"
-                            {% if current_user.points < question.price %}disabled{% endif %}>
-                        🛒 Купить вопрос
+
+                <!-- ПРОВЕРЯЕМ КУПЛЕН ЛИ ВОПРОС КОМАНДОЙ -->
+                {% set question_purchased = false %}
+                {% for purchase in purchased_questions %}
+                    {% if purchase.question.id == question.id %}
+                        {% set question_purchased = true %}
+                    {% endif %}
+                {% endfor %}
+
+                {% if question_purchased %}
+                    <!-- ВОПРОС УЖЕ КУПЛЕН КОМАНДОЙ - СЕРАЯ КНОПКА -->
+                    <button type="button" class="btn" style="background: #95a5a6; color: white; cursor: not-allowed; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 600;" disabled>
+                        ✅ Вопрос куплен
                     </button>
-                </form>
+                {% else %}
+                    <!-- ВОПРОС ЕЩЕ НЕ КУПЛЕН - ЗЕЛЕНАЯ КНОПКА -->
+                    <form method="POST" action="{{ url_for('frontend.purchase_question') }}" style="margin: 0;">
+                        <input type="hidden" name="question_id" value="{{ question.id }}">
+                        <button type="submit" class="btn btn-primary"
+                                {% if current_user.points < question.price %}disabled{% endif %}>
+                            🛒 Купить вопрос
+                        </button>
+                    </form>
+                {% endif %}
             </div>
-            {% if current_user.points < question.price %}
+
+            <!-- Сообщение о недостатке баллов (только если вопрос еще не куплен) -->
+            {% if not question_purchased and current_user.points < question.price %}
             <p style="color: #ff6b6b; font-size: 0.9em; margin-top: 10px; font-weight: 600;">
                 ❌ Недостаточно баллов (нужно: {{ question.price }})
             </p>
+            {% endif %}
+
+            <!-- Сообщение о том, кто купил вопрос -->
+            {% if question_purchased %}
+                {% for purchase in purchased_questions %}
+                    {% if purchase.question.id == question.id %}
+                    <p style="color: #4ecdc4; font-size: 0.9em; margin-top: 10px; font-weight: 600;">
+                        ✅ Купил: {{ purchase.purchaser.name }}
+                    </p>
+                    {% endif %}
+                {% endfor %}
             {% endif %}
         </div>
         {% endfor %}

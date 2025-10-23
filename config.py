@@ -32,6 +32,6 @@ TEAM_EMAILS = [
 TEAM_MEMBERS = [
     {'name': 'Самонов', 'email': 'samonov.135@gmail.com', 'personal_password': 'pass123', 'points': 250},
     {'name': 'Галкина', 'email': 'galkinasnezana788@gmail.com', 'personal_password': 'pass123', 'points': 250},
-    {'name': 'Лесня', 'email': 'lesa85130@gmail.com', 'personal_password': 'pass123', 'points': 250},
-    {'name': 'Лавика', 'email': 'pravolavika@gmail.com', 'personal_password': 'pass123', 'points': 250},
+    {'name': 'Моципан', 'email': 'lesa85130@gmail.com', 'personal_password': 'pass123', 'points': 250},
+    {'name': 'Исмайлов', 'email': 'pravolavika@gmail.com', 'personal_password': 'pass123', 'points': 250},
 ]

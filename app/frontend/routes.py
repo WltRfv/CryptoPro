@@ -31,6 +31,11 @@ def team_login():
             print(f"❌ Ошибка в team_login: {e}")
             flash(f"Ошибка при отправке ключей: {str(e)}", 'error')
 
+    # ВЫХОДИМ ИЗ СИСТЕМЫ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ ВХОДА
+    if current_user.is_authenticated:
+        logout_user()
+        print("🔒 Пользователь разлогинен при загрузке страницы входа")
+
     return render_template('team_login.html', session_token=session_token)
 
 
@@ -63,13 +68,18 @@ def verify_keys():
             # НЕ ВХОДИМ В СИСТЕМУ КАК УЧАСТНИК - только получаем доступ к кошельку
             print("✅ Успешная проверка ключей - доступ к кошельку получен")
 
+            # УБЕЖДАЕМСЯ ЧТО ПОЛЬЗОВАТЕЛЬ НЕ АВТОРИЗОВАН
+            if current_user.is_authenticated:
+                logout_user()
+                print("🔒 Пользователь разлогинен перед входом в кошелек")
+
             return jsonify({
                 'success': True,
                 'message': message,
                 'redirect_url': url_for('frontend.dashboard', team_id=team.id)
             })
         else:
-            return jsonify({'success': False, 'message': 'Команда не найдена'})
+            return jsonify({'success': False, 'message': 'Команда не найден'})
     else:
         return jsonify({'success': False, 'message': message})
 
