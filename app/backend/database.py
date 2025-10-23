@@ -5,6 +5,7 @@ from flask_login import UserMixin
 
 db = SQLAlchemy()
 
+
 class Team(db.Model):
     __tablename__ = 'teams'
     id = db.Column(db.Integer, primary_key=True)
@@ -12,7 +13,8 @@ class Team(db.Model):
     total_points = db.Column(db.Integer, default=1000)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-class Member(db.Model, UserMixin):  # ДОБАВЬТЕ UserMixin
+
+class Member(db.Model, UserMixin):
     __tablename__ = 'members'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
@@ -22,7 +24,9 @@ class Member(db.Model, UserMixin):  # ДОБАВЬТЕ UserMixin
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     team_id = db.Column(db.Integer, db.ForeignKey('teams.id'), nullable=False)
 
-    # ДОБАВЬТЕ ЭТИ МЕТОДЫ ДЛЯ FLASK-LOGIN
+    # ДОБАВЛЕНО: флаг преподавателя
+    is_teacher = db.Column(db.Boolean, default=False)
+
     @property
     def is_active(self):
         return True
@@ -38,6 +42,7 @@ class Member(db.Model, UserMixin):  # ДОБАВЬТЕ UserMixin
     def get_id(self):
         return str(self.id)
 
+
 class LoginSession(db.Model):
     __tablename__ = 'login_sessions'
     id = db.Column(db.Integer, primary_key=True)
@@ -45,6 +50,7 @@ class LoginSession(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     expires_at = db.Column(db.DateTime, nullable=False)
+
 
 class KeyShare(db.Model):
     __tablename__ = 'key_shares'
@@ -57,6 +63,7 @@ class KeyShare(db.Model):
     used_at = db.Column(db.DateTime, nullable=True)
     session_id = db.Column(db.Integer, db.ForeignKey('login_sessions.id'), nullable=False)
 
+
 class Question(db.Model):
     __tablename__ = 'questions'
     id = db.Column(db.Integer, primary_key=True)
@@ -64,6 +71,11 @@ class Question(db.Model):
     price = db.Column(db.Integer, nullable=False)
     is_approved = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    # ДОБАВЛЕНО: кто предложил вопрос
+    proposed_by = db.Column(db.Integer, db.ForeignKey('members.id'), nullable=True)
+    # ДОБАВЛЕНО: какая команда предложила вопрос
+    proposed_by_team = db.Column(db.Integer, db.ForeignKey('teams.id'), nullable=True)
+
 
 class QuestionPurchase(db.Model):
     __tablename__ = 'question_purchases'
@@ -73,6 +85,7 @@ class QuestionPurchase(db.Model):
     team_id = db.Column(db.Integer, db.ForeignKey('teams.id'), nullable=False)
     purchased_by = db.Column(db.Integer, db.ForeignKey('members.id'), nullable=False)
 
+
 class Transfer(db.Model):
     __tablename__ = 'transfers'
     id = db.Column(db.Integer, primary_key=True)
@@ -81,6 +94,9 @@ class Transfer(db.Model):
     from_member_id = db.Column(db.Integer, db.ForeignKey('members.id'), nullable=False)
     to_member_id = db.Column(db.Integer, db.ForeignKey('members.id'), nullable=False)
     team_id = db.Column(db.Integer, db.ForeignKey('teams.id'), nullable=False)
+    # ДОБАВЛЕНО: тип перевода (обычный/начисление от преподавателя)
+    transfer_type = db.Column(db.String(20), default='regular')  # 'regular' или 'teacher_reward'
+
 
 def init_db(app):
     db.init_app(app)

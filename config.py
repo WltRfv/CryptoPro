@@ -20,18 +20,21 @@ class Config:
     MIN_SHARES = 3
     TOTAL_SHARES = 4
 
+    # Преподаватель
+    TEACHER_PASSWORD = os.environ.get('TEACHER_PASSWORD') or 'teacher123'
+    TEACHER_POINTS = 100000
 
-# Конфигурация команды и email
-TEAM_EMAILS = [
-    "samonov.135@gmail.com",
-    "galkinasnezana788@gmail.com",
-    "lesa85130@gmail.com",
-    "pravolavika@gmail.com"
-]
+    # Конфигурация команды и email
+    TEAM_EMAILS = [
+        "samonov.135@gmail.com",
+        "galkinasnezana788@gmail.com",
+        "lesa85130@gmail.com",
+        "pravolavika@gmail.com"
+    ]
 
-TEAM_MEMBERS = [
-    {'name': 'Самонов', 'email': 'samonov.135@gmail.com', 'personal_password': 'pass123', 'points': 250},
-    {'name': 'Галкина', 'email': 'galkinasnezana788@gmail.com', 'personal_password': 'pass123', 'points': 250},
-    {'name': 'Моципан', 'email': 'lesa85130@gmail.com', 'personal_password': 'pass123', 'points': 250},
-    {'name': 'Исмайлов', 'email': 'pravolavika@gmail.com', 'personal_password': 'pass123', 'points': 250},
-]
+    TEAM_MEMBERS = [
+        {'name': 'Самонов', 'email': 'samonov.135@gmail.com', 'personal_password': 'pass123', 'points': 250},
+        {'name': 'Галкина', 'email': 'galkinasnezana788@gmail.com', 'personal_password': 'pass123', 'points': 250},
+        {'name': 'Моципан', 'email': 'lesa85130@gmail.com', 'personal_password': 'pass123', 'points': 250},
+        {'name': 'Исмайлов', 'email': 'pravolavika@gmail.com', 'personal_password': 'pass123', 'points': 250},
+    ]

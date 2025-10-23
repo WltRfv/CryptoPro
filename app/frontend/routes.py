@@ -92,7 +92,6 @@ def personal_login():
         personal_password = request.form.get('personal_password')
 
         member, is_valid = auth_manager.verify_personal_login(member_name, personal_password)
-
         if is_valid and member:
             login_user(member)
             flash(f'Добро пожаловать, {member.name}!', 'success')
@@ -107,7 +106,6 @@ def personal_login():
 def dashboard(team_id):
     """Дашборд команды"""
     print(f"🎯 Загружаем дашборд для команды {team_id}")
-
     dashboard_data = wallet_core.get_team_dashboard(team_id)
     print(f"📊 Данные дашборда: {dashboard_data is not None}")
 
@@ -144,13 +142,15 @@ def purchase_question():
 @bp.route('/transfer-points', methods=['POST'])
 @login_required
 def transfer_points():
-    """Перевод баллов"""
+    """Перевод баллов или начисление от преподавателя"""
     if not current_user.is_authenticated:
         flash('Для перевода баллов необходимо войти в личный кабинет', 'error')
         return redirect(url_for('frontend.dashboard', team_id=current_user.team_id))
 
+    transfer_type = request.form.get('transfer_type', 'regular')  # 'regular' или 'teacher_reward'
     to_member_id = request.form.get('to_member_id')
     amount = request.form.get('amount')
+    teacher_password = request.form.get('teacher_password', '')
 
     try:
         amount = int(amount)
@@ -158,7 +158,12 @@ def transfer_points():
         flash('Некорректная сумма', 'error')
         return redirect(url_for('frontend.dashboard', team_id=current_user.team_id))
 
-    success, message = wallet_core.transfer_points(current_user.id, to_member_id, amount)
+    if transfer_type == 'teacher_reward':
+        # Начисление от преподавателя
+        success, message = wallet_core.reward_points(current_user.id, to_member_id, amount, teacher_password)
+    else:
+        # Обычный перевод
+        success, message = wallet_core.transfer_points(current_user.id, to_member_id, amount)
 
     if success:
         flash(message, 'success')

@@ -6,14 +6,12 @@ from .encryption_simple import shamir_manager, password_hasher
 from .email_service import email_service
 import sys
 import os
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from config import TEAM_EMAILS, TEAM_MEMBERS
-
+from config import Config  # ИМПОРТИРУЕМ КЛАСС Config
 
 class AuthManager:
-    TEAM_EMAILS = TEAM_EMAILS
-    TEAM_MEMBERS = TEAM_MEMBERS
+    TEAM_EMAILS = Config.TEAM_EMAILS  # ИСПОЛЬЗУЕМ Config.
+    TEAM_MEMBERS = Config.TEAM_MEMBERS  # ИСПОЛЬЗУЕМ Config.
 
     @staticmethod
     def initiate_team_login():
@@ -36,7 +34,7 @@ class AuthManager:
             # ОТЛАДКА: покажем какой ключ кому отправляется
             print("🔑 РАСПРЕДЕЛЕНИЕ КЛЮЧЕЙ:")
             for i, email in enumerate(AuthManager.TEAM_EMAILS):
-                print(f"   {email} → Ключ {i + 1}: {shares[i][:20]}...")
+                print(f"  {email} → Ключ {i + 1}: {shares[i][:20]}...")
 
             # Создаем запись сессии
             login_session = LoginSession(
@@ -50,7 +48,6 @@ class AuthManager:
             email_count = 0
             for i, email in enumerate(AuthManager.TEAM_EMAILS):
                 print(f"📨 Отправка ключа {i + 1} на {email}: {shares[i]}")
-
                 key_share = KeyShare(
                     share=shares[i],
                     email=email,
@@ -94,8 +91,7 @@ class AuthManager:
 
                 # Записываем ключи с указанием email и номера
                 emails = ["samonov.135@gmail.com", "galkinasnezana788@gmail.com",
-                          "lesa85130@gmail.com", "pravolavika@gmail.com"]
-
+                         "lesa85130@gmail.com", "pravolavika@gmail.com"]
                 for i, share in enumerate(shares, 1):
                     f.write(f"Ключ {i} ({emails[i - 1]}): {share}\n")
 
@@ -110,7 +106,6 @@ class AuthManager:
 
             print("✅ Ключи сохранены в файл test_keys.txt")
             print("📁 Откройте файл test_keys.txt чтобы увидеть ключи для тестирования")
-
         except Exception as e:
             print(f"❌ Ошибка сохранения ключей в файл: {e}")
 
@@ -186,7 +181,6 @@ class AuthManager:
         if member and password_hasher.verify_password(personal_password, member.personal_password):
             return member, True
         return None, False
-
 
 # Создаем глобальный экземпляр
 auth_manager = AuthManager()
