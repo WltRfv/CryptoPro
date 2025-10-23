@@ -24,19 +24,17 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
-    password_hash = db.Column(db.String(200), nullable=False)
-    personal_password = db.Column(db.String(200), nullable=False)  # Для личных операций
+    # УБИРАЕМ password_hash или делаем nullable=True
+    # password_hash = db.Column(db.String(200), nullable=False)
+    personal_password = db.Column(db.String(200), nullable=False)
     points = db.Column(db.Integer, default=0)
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Внешние ключи
     team_id = db.Column(db.Integer, db.ForeignKey('teams.id'), nullable=False)
 
-    # Связи
     transfers_sent = db.relationship('Transfer', foreign_keys='Transfer.from_user_id', backref='sender', lazy=True)
     transfers_received = db.relationship('Transfer', foreign_keys='Transfer.to_user_id', backref='receiver', lazy=True)
-
 
 class LoginSession(db.Model):
     __tablename__ = 'login_sessions'

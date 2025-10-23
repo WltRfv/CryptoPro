@@ -26,9 +26,9 @@ def init_test_data():
         db.session.add(team)
         teams.append(team)
 
-    db.session.flush()  # Получаем ID команд
+    db.session.flush()
 
-    # Создаем тестовых пользователей
+    # Создаем тестовых пользователей (УБИРАЕМ password_hash)
     users_data = [
         # Команда Альфа (4 человека)
         {'username': 'alex_alpha', 'email': 'alex.alpha@university.com', 'personal_password': 'pass123', 'points': 250,
@@ -77,7 +77,6 @@ def init_test_data():
         {'content': 'Что такое смарт-контракты и их применение?', 'price': 200, 'is_approved': True},
         {'content': 'Объясните разницу между публичными и приватными ключами', 'price': 80, 'is_approved': True},
         {'content': 'Как работает алгоритм консенсуса в распределенных системах?', 'price': 180, 'is_approved': False},
-        # На модерации
         {'content': 'Что такое децентрализованные финансы (DeFi)?', 'price': 220, 'is_approved': True},
         {'content': 'Объясните механизм масштабирования Lightning Network', 'price': 250, 'is_approved': True},
     ]
@@ -87,7 +86,7 @@ def init_test_data():
             content=question_data['content'],
             price=question_data['price'],
             is_approved=question_data['is_approved'],
-            created_by=1 if i % 3 == 0 else 2  # Чередуем создателей
+            created_by=1 if i % 3 == 0 else 2
         )
         db.session.add(question)
 
@@ -99,7 +98,6 @@ def init_test_data():
         print(f"   - Пользователей: {len(users_data)}")
         print(f"   - Вопросов: {len(questions_data)}")
 
-        # Выводим тестовые данные для удобства
         print("\n🔑 Тестовые логины для личного входа:")
         print("   Команда 'Команда_Альфа':")
         for user in users_data[:4]:
@@ -109,16 +107,3 @@ def init_test_data():
         db.session.rollback()
         print(f"❌ Ошибка при создании тестовых данных: {str(e)}")
         raise
-
-
-if __name__ == "__main__":
-    from flask import Flask
-    from config import Config
-
-    app = Flask(__name__)
-    app.config.from_object(Config)
-
-    db.init_app(app)
-
-    with app.app_context():
-        init_test_data()

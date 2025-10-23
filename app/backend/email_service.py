@@ -1,6 +1,6 @@
 import smtplib
-from email.mime.text import MimeText
-from email.mime.multipart import MimeMultipart
+from email.mime.text import MIMEText  # ← ИСПРАВЛЕНО: MimeText на MIMEText
+from email.mime.multipart import MIMEMultipart  # ← ИСПРАВЛЕНО: MimeMultipart на MIMEMultipart
 import os
 from datetime import datetime, timedelta
 
@@ -70,13 +70,13 @@ class EmailService:
 
     def send_email(self, to_email, subject, body):
         """Отправляет email"""
-        msg = MimeMultipart()
+        msg = MIMEMultipart()  # ← ИСПРАВЛЕНО: MimeMultipart на MIMEMultipart
         msg['From'] = self.username
         msg['To'] = to_email
         msg['Subject'] = subject
 
         # Добавляем HTML тело
-        msg.attach(MimeText(body, 'html'))
+        msg.attach(MIMEText(body, 'html'))  # ← ИСПРАВЛЕНО: MimeText на MIMEText
 
         # Подключаемся к серверу и отправляем
         server = smtplib.SMTP(self.smtp_server, self.port)

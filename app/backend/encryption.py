@@ -2,7 +2,7 @@ import secrets
 import hashlib
 from cryptography.fernet import Fernet
 import base64
-from secretsharing import SecretSharer
+import ssss  # Новая библиотека
 
 class EncryptionManager:
     def __init__(self):
