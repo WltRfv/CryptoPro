@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 100px auto;">
+    <div class="card">
+        <div class="header">
+            <h1>👤 Личный вход</h1>
+            <p>Войдите в личный кабинет</p>
+        </div>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label for="username">Имя пользователя:</label>
+                <input type="text" id="username" name="username" required 
+                       placeholder="Например: alex_alpha">
+            </div>
+            
+            <div class="form-group">
+                <label for="personal_password">Личный пароль:</label>
+                <input type="password" id="personal_password" name="personal_password" required 
+                       placeholder="Введите ваш пароль">
+            </div>
+            
+            <button type="submit" class="btn" style="width: 100%;">
+                Войти в личный кабинет
+            </button>
+        </form>
+        
+        <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+            <a href="{{ url_for('frontend.team_login') }}" class="btn btn-secondary" 
+               style="width: 100%;">
+                ← Назад к входу команды
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

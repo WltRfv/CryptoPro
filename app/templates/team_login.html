@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 100px auto;">
+    <div class="card">
+        <div class="header">
+            <h1>🔐 Вход в Кошелек</h1>
+            <p>Войдите в кошелек вашей команды</p>
+        </div>
+
+        <form method="POST">
+            <div class="form-group">
+                <label for="team_name">Название команды:</label>
+                <input type="text" id="team_name" name="team_name" required
+                       placeholder="Например: Команда_Альфа">
+            </div>
+
+            <button type="submit" class="btn" style="width: 100%;">
+                Получить ключи доступа
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+            <p>Или войдите в личный кабинет:</p>
+            <a href="{{ url_for('frontend.personal_login') }}" class="btn btn-secondary"
+               style="width: 100%; margin-top: 10px;">
+                Личный вход
+            </a>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top: 20px; background: #f8f9fa;">
+        <h3 style="text-align: center; margin-bottom: 15px;">📋 Тестовые данные</h3>
+        <p><strong>Команды для теста:</strong></p>
+        <ul style="margin-left: 20px; margin-bottom: 15px;">
+            <li>Команда_Альфа</li>
+            <li>Команда_Бета</li>
+            <li>Команда_Гамма</li>
+        </ul>
+        <p><strong>Личные логины (команда Альфа):</strong></p>
+        <ul style="margin-left: 20px;">
+            <li>alex_alpha / pass123</li>
+            <li>maria_alpha / pass123</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

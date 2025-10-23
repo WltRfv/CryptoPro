@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="nav">
+    <h1 style="color: white;">💰 Крипто-Кошелек: {{ team.name }}</h1>
+    <div class="nav-links">
+        <span style="color: white;">Привет, {{ current_user.username }}!</span>
+        <a href="{{ url_for('frontend.logout') }}">Выйти</a>
+    </div>
+</div>
+
+<!-- Статистика команды -->
+<div class="grid">
+    <div class="stats-card">
+        <h3>🏆 Баллы команды</h3>
+        <div class="stats-number">{{ team.total_points }}</div>
+        <p>Всего баллов у команды</p>
+    </div>
+
+    <div class="stats-card">
+        <h3>👥 Участники</h3>
+        <div class="stats-number">{{ members|length }}</div>
+        <p>Человек в команде</p>
+    </div>
+
+    <div class="stats-card">
+        <h3>💼 Личные баллы</h3>
+        <div class="stats-number">{{ current_user.points }}</div>
+        <p>Ваши личные баллы</p>
+    </div>
+</div>
+
+<div class="grid">
+    <!-- Участники команды -->
+    <div class="card">
+        <h2>👥 Участники команды</h2>
+        <ul class="member-list">
+            {% for member in members %}
+            <li class="member-item">
+                <div>
+                    <strong>{{ member.username }}</strong>
+                    <div style="color: #666; font-size: 0.9em;">{{ member.email }}</div>
+                </div>
+                <div style="font-weight: bold; color: #28a745;">
+                    {{ member.points }} баллов
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Перевод баллов -->
+    <div class="card">
+        <h2>🔄 Перевод баллов</h2>
+        <form method="POST" action="{{ url_for('frontend.transfer_points') }}">
+            <div class="form-group">
+                <label for="to_user_id">Кому перевести:</label>
+                <select id="to_user_id" name="to_user_id" required>
+                    <option value="">Выберите участника</option>
+                    {% for member in members %}
+                        {% if member.id != current_user.id %}
+                        <option value="{{ member.id }}">{{ member.username }} ({{ member.points }} баллов)</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="amount">Сумма перевода:</label>
+                <input type="number" id="amount" name="amount" min="1" max="{{ current_user.points }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="personal_password">Ваш пароль:</label>
+                <input type="password" id="personal_password" name="personal_password" required>
+            </div>
+
+            <button type="submit" class="btn">Перевести баллы</button>
+        </form>
+    </div>
+</div>
+
+<!-- Доступные вопросы -->
+<div class="card">
+    <h2>📚 Доступные вопросы</h2>
+    <div class="grid">
+        {% for question in available_questions %}
+        <div class="card" style="background: #f8f9fa;">
+            <h3>{{ question.content }}</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                <span style="font-weight: bold; color: #e83e8c; font-size: 1.2em;">
+                    {{ question.price }} баллов
+                </span>
+                <form method="POST" action="{{ url_for('frontend.purchase_question') }}" style="margin: 0;">
+                    <input type="hidden" name="question_id" value="{{ question.id }}">
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <input type="password" name="personal_password" placeholder="Ваш пароль" required
+                               style="padding: 8px; font-size: 14px;">
+                    </div>
+                    <button type="submit" class="btn"
+                            {% if current_user.points < question.price %}disabled{% endif %}>
+                        Купить вопрос
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Предложить вопрос -->
+<div class="card">
+    <h2>💡 Предложить новый вопрос</h2>
+    <form method="POST" action="{{ url_for('frontend.propose_question') }}">
+        <div class="form-group">
+            <label for="content">Текст вопроса:</label>
+            <textarea id="content" name="content" rows="3" required
+                     placeholder="Введите текст вопроса..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="price">Цена вопроса (баллы):</label>
+            <input type="number" id="price" name="price" min="10" required>
+        </div>
+
+        <button type="submit" class="btn">Предложить вопрос</button>
+    </form>
+</div>
+
+<!-- История операций -->
+<div class="grid">
+    <!-- Купленные вопросы -->
+    <div class="card">
+        <h2>🛒 Купленные вопросы</h2>
+        {% if purchased_questions %}
+            <ul class="member-list">
+                {% for purchase in purchased_questions %}
+                <li class="member-item">
+                    <div>
+                        <strong>{{ purchase.question.content }}</strong>
+                        <div style="color: #666; font-size: 0.9em;">
+                            Купил: {{ purchase.purchased_by }}
+                        </div>
+                    </div>
+                    <div style="color: #dc3545; font-weight: bold;">
+                        -{{ purchase.question.price }}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p style="text-align: center; color: #666; padding: 20px;">
+                Пока не куплено ни одного вопроса
+            </p>
+        {% endif %}
+    </div>
+
+    <!-- История переводов -->
+    <div class="card">
+        <h2>📊 История переводов</h2>
+        {% if transfers %}
+            <ul class="member-list">
+                {% for transfer in transfers %}
+                <li class="member-item">
+                    <div>
+                        <strong>{{ transfer.sender.username }} → {{ transfer.receiver.username }}</strong>
+                        <div style="color: #666; font-size: 0.9em;">
+                            {{ transfer.transferred_at.strftime('%d.%m.%Y %H:%M') }}
+                        </div>
+                    </div>
+                    <div style="font-weight: bold; color: #28a745;">
+                        {{ transfer.amount }} баллов
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p style="text-align: center; color: #666; padding: 20px;">
+                Пока не было переводов
+            </p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
