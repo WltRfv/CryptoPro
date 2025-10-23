@@ -4,44 +4,88 @@
 <div style="max-width: 500px; margin: 100px auto;">
     <div class="card">
         <div class="header">
-            <h1>🔐 Вход в Кошелек</h1>
-            <p>Войдите в кошелек вашей команды</p>
+            <h1>🔐 Командный Кошелек</h1>
+            <p>Доступ только через ключи участников</p>
         </div>
 
         <form method="POST">
-            <div class="form-group">
-                <label for="team_name">Название команды:</label>
-                <input type="text" id="team_name" name="team_name" required
-                       placeholder="Например: Команда_Альфа">
-            </div>
-
             <button type="submit" class="btn" style="width: 100%;">
-                Получить ключи доступа
+                📧 Отправить ключи на почту участникам
             </button>
         </form>
 
-        <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
-            <p>Или войдите в личный кабинет:</p>
-            <a href="{{ url_for('frontend.personal_login') }}" class="btn btn-secondary"
-               style="width: 100%; margin-top: 10px;">
-                Личный вход
-            </a>
+        {% if session_token %}
+        <div style="margin-top: 20px; padding: 15px; background: #e7f3ff; border-radius: 8px;">
+            <h3>✅ Ключи отправлены!</h3>
+            <p>Токен сессии: <strong>{{ session_token }}</strong></p>
+            <p>Проверьте почту всех участников и введите полученные ключи ниже:</p>
         </div>
+        {% endif %}
+    </div>
+
+    <!-- Форма ввода ключей -->
+    <div class="card" style="margin-top: 20px;">
+        <h2>🔑 Ввод ключей</h2>
+        <form id="verifyForm">
+            <div class="form-group">
+                <label for="keys_input">Введите ключи (минимум 3):</label>
+                <textarea id="keys_input" name="keys_input" rows="4"
+                         placeholder="Вставьте сюда ключи, полученные на почту. Разделяйте пробелом или запятой."
+                         class="key-input" required></textarea>
+            </div>
+
+            {% if session_token %}
+            <input type="hidden" id="session_token" name="session_token" value="{{ session_token }}">
+            {% endif %}
+
+            <button type="submit" class="btn" style="width: 100%;">
+                🔓 Войти в кошелек
+            </button>
+        </form>
+
+        <div id="result" style="margin-top: 20px;"></div>
     </div>
 
     <div class="card" style="margin-top: 20px; background: #f8f9fa;">
-        <h3 style="text-align: center; margin-bottom: 15px;">📋 Тестовые данные</h3>
-        <p><strong>Команды для теста:</strong></p>
-        <ul style="margin-left: 20px; margin-bottom: 15px;">
-            <li>Команда_Альфа</li>
-            <li>Команда_Бета</li>
-            <li>Команда_Гамма</li>
-        </ul>
-        <p><strong>Личные логины (команда Альфа):</strong></p>
+        <h3>📋 Информация</h3>
+        <p><strong>Участники команды:</strong></p>
         <ul style="margin-left: 20px;">
-            <li>alex_alpha / pass123</li>
-            <li>maria_alpha / pass123</li>
+            <li>samonov.135@mail.ru</li>
+            <li>galkinasnezana788@gmail.com</li>
+            <li>lesa85130@gmail.com</li>
+            <li>pravolavika@gmail.com</li>
         </ul>
+        <p><strong>Для входа нужно минимум 3 ключа из 4</strong></p>
     </div>
 </div>
+
+<script>
+document.getElementById('verifyForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const resultDiv = document.getElementById('result');
+
+    resultDiv.innerHTML = '<div class="alert">🔍 Проверяем ключи...</div>';
+
+    fetch('/verify-keys', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            resultDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+            setTimeout(() => {
+                window.location.href = data.redirect_url;
+            }, 2000);
+        } else {
+            resultDiv.innerHTML = `<div class="alert alert-error">${data.message}</div>`;
+        }
+    })
+    .catch(error => {
+        resultDiv.innerHTML = `<div class="alert alert-error">Ошибка: ${error}</div>`;
+    });
+});
+</script>
 {% endblock %}

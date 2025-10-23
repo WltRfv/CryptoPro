@@ -17,5 +17,21 @@ class Config:
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
 
     # Shamir's Secret Sharing
-    MIN_SHARES = 3  # Минимальное количество частей для восстановления
-    TOTAL_SHARES = 4  # Общее количество частей
+    MIN_SHARES = 3
+    TOTAL_SHARES = 4
+
+
+# Конфигурация команды и email
+TEAM_EMAILS = [
+    "samonov.135@mail.ru",
+    "galkinasnezana788@gmail.com",
+    "lesa85130@gmail.com",
+    "pravolavika@gmail.com"
+]
+
+TEAM_MEMBERS = [
+    {'name': 'Самонов', 'email': 'samonov.135@mail.ru', 'personal_password': 'pass123', 'points': 250},
+    {'name': 'Галкина', 'email': 'galkinasnezana788@gmail.com', 'personal_password': 'pass123', 'points': 250},
+    {'name': 'Лесня', 'email': 'lesa85130@gmail.com', 'personal_password': 'pass123', 'points': 250},
+    {'name': 'Лавика', 'email': 'pravolavika@gmail.com', 'personal_password': 'pass123', 'points': 250},
+]

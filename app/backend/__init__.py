@@ -1,7 +1,12 @@
-# app/backend/__init__.py
-from .auth import auth_manager
+# Этот файл может быть ПУСТЫМ или содержать только базовые импорты
+# Мы убираем сложные импорты чтобы избежать циклических зависимостей
+
+# Можете оставить файл полностью ПУСТЫМ
+# Или добавить только самые базовые импорты:
+
 from .database import db
-from .encryption import encryption_manager, shamir_manager, password_hasher
-from .email_service import email_service
-from .wallet_core import wallet_core
-from .init_db import init_test_data
+
+# НЕ добавляйте сложные импорты типа:
+# from .auth import AuthManager
+# from .encryption import encryption_manager
+# и т.д.

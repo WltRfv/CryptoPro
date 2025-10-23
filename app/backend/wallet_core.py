@@ -1,4 +1,4 @@
-from .database import db, User, Team, Question, QuestionPurchase, Transfer, Transaction
+from .database import db, Member, Team, Question, QuestionPurchase, Transfer
 from datetime import datetime
 
 
@@ -19,38 +19,41 @@ class WalletCore:
         # Получаем доступные вопросы
         available_questions = Question.query.filter_by(is_approved=True).all()
 
+        # Получаем участников команды
+        members = Member.query.filter_by(team_id=team_id).all()
+
         return {
             'team': team,
-            'members': team.members,
+            'members': members,
             'purchased_questions': purchased_questions,
             'transfers': transfers,
             'available_questions': available_questions,
-            'total_team_points': sum(member.points for member in team.members)
+            'total_team_points': sum(member.points for member in members)
         }
 
     @staticmethod
-    def purchase_question(question_id, user_id, personal_password):
+    def purchase_question(question_id, member_id, personal_password):
         """
-        Покупка вопроса пользователем
+        Покупка вопроса участником
         """
         from .auth import password_hasher
 
-        # Проверяем пользователя и пароль
-        user = User.query.get(user_id)
-        if not user or not password_hasher.verify_password(personal_password, user.personal_password):
+        # Проверяем участника и пароль
+        member = Member.query.get(member_id)
+        if not member or not password_hasher.verify_password(personal_password, member.personal_password):
             return False, "Неверный личный пароль"
 
         question = Question.query.get(question_id)
         if not question or not question.is_approved:
             return False, "Вопрос не найден или не одобрен"
 
-        if user.points < question.price:
+        if member.points < question.price:
             return False, "Недостаточно средств"
 
         # Проверяем, не куплен ли вопрос уже командой
         existing_purchase = QuestionPurchase.query.filter_by(
             question_id=question_id,
-            team_id=user.team_id
+            team_id=member.team_id
         ).first()
 
         if existing_purchase:
@@ -58,26 +61,16 @@ class WalletCore:
 
         try:
             # Списание средств
-            user.points -= question.price
-            user.team.total_points -= question.price
+            member.points -= question.price
+            member.team.total_points -= question.price
 
             # Создаем запись о покупке
             purchase = QuestionPurchase(
                 question_id=question_id,
-                team_id=user.team_id,
-                purchased_by=user_id
+                team_id=member.team_id,
+                purchased_by=member_id
             )
             db.session.add(purchase)
-
-            # Записываем транзакцию
-            transaction = Transaction(
-                amount=question.price,
-                transaction_type='purchase',
-                description=f'Покупка вопроса: {question.content[:50]}...',
-                team_id=user.team_id,
-                user_id=user_id
-            )
-            db.session.add(transaction)
 
             db.session.commit()
             return True, "Вопрос успешно куплен"
@@ -87,25 +80,25 @@ class WalletCore:
             return False, f"Ошибка при покупке: {str(e)}"
 
     @staticmethod
-    def transfer_points(from_user_id, to_user_id, amount, personal_password):
+    def transfer_points(from_member_id, to_member_id, amount, personal_password):
         """
-        Перевод баллов между пользователями
+        Перевод баллов между участниками
         """
         from .auth import password_hasher
 
         # Проверяем отправителя и пароль
-        from_user = User.query.get(from_user_id)
-        if not from_user or not password_hasher.verify_password(personal_password, from_user.personal_password):
+        from_member = Member.query.get(from_member_id)
+        if not from_member or not password_hasher.verify_password(personal_password, from_member.personal_password):
             return False, "Неверный личный пароль"
 
-        to_user = User.query.get(to_user_id)
-        if not to_user:
+        to_member = Member.query.get(to_member_id)
+        if not to_member:
             return False, "Получатель не найден"
 
-        if from_user.team_id != to_user.team_id:
+        if from_member.team_id != to_member.team_id:
             return False, "Можно переводить только сокомандникам"
 
-        if from_user.points < amount:
+        if from_member.points < amount:
             return False, "Недостаточно средств"
 
         if amount <= 0:
@@ -113,27 +106,17 @@ class WalletCore:
 
         try:
             # Выполняем перевод
-            from_user.points -= amount
-            to_user.points += amount
+            from_member.points -= amount
+            to_member.points += amount
 
             # Создаем запись о переводе
             transfer = Transfer(
-                from_user_id=from_user_id,
-                to_user_id=to_user_id,
+                from_member_id=from_member_id,
+                to_member_id=to_member_id,
                 amount=amount,
-                team_id=from_user.team_id
+                team_id=from_member.team_id
             )
             db.session.add(transfer)
-
-            # Записываем транзакцию
-            transaction = Transaction(
-                amount=amount,
-                transaction_type='transfer',
-                description=f'Перевод {from_user.username} -> {to_user.username}',
-                team_id=from_user.team_id,
-                user_id=from_user_id
-            )
-            db.session.add(transaction)
 
             db.session.commit()
             return True, "Перевод выполнен успешно"
@@ -143,7 +126,7 @@ class WalletCore:
             return False, f"Ошибка при переводе: {str(e)}"
 
     @staticmethod
-    def propose_question(content, price, user_id):
+    def propose_question(content, price, member_id):
         """
         Предложение нового вопроса
         """
@@ -151,7 +134,7 @@ class WalletCore:
             question = Question(
                 content=content,
                 price=price,
-                created_by=user_id,
+                created_by=member_id,
                 is_approved=False  # Требует модерации
             )
             db.session.add(question)

@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, jsonify, flash, redirect,
 from flask_login import login_user, logout_user, current_user, login_required
 from app.backend.auth import auth_manager
 from app.backend.wallet_core import wallet_core
-from app.backend.database import User, Team
+from app.backend.database import Member, Team
 
 bp = Blueprint('frontend', __name__)
 
@@ -14,24 +14,15 @@ def index():
 
 @bp.route('/team-login', methods=['GET', 'POST'])
 def team_login():
-    """Страница входа для команды"""
+    """Единственная страница входа - только через ключи"""
+    session_token = None
+
     if request.method == 'POST':
-        team_name = request.form.get('team_name')
+        # Всегда отправляем ключи при нажатии кнопки
+        session_token, message = auth_manager.initiate_team_login()
+        flash(message, 'success')
 
-        if not team_name:
-            flash('Введите название команды', 'error')
-            return render_template('team_login.html')
-
-        # Инициируем процесс входа
-        session_token, message = auth_manager.initiate_team_login(team_name)
-
-        if session_token:
-            flash(f'Ключи отправлены на почту участникам команды. Токен сессии: {session_token}', 'success')
-            return render_template('key_verification.html', session_token=session_token)
-        else:
-            flash(message, 'error')
-
-    return render_template('team_login.html')
+    return render_template('team_login.html', session_token=session_token)
 
 
 @bp.route('/verify-keys', methods=['POST'])
@@ -47,14 +38,13 @@ def verify_keys():
     shares = [key.strip() for key in keys_input.replace(',', ' ').split() if key.strip()]
 
     if len(shares) < 3:
-        return jsonify({'success': False, 'message': 'Нужно как минимум 3 ключа'})
+        return jsonify({'success': False, 'message': 'Нужно минимум 3 ключа'})
 
     # Проверяем комбинацию
     success, message = auth_manager.verify_combined_key(shares, session_token)
 
     if success:
-        # Находим команду по сессии (в реальном приложении нужно связать сессию с командой)
-        # Пока просто редиректим на дашборд первой команды для демонстрации
+        # Получаем команду (у нас только одна)
         team = Team.query.first()
         return jsonify({
             'success': True,
@@ -67,19 +57,19 @@ def verify_keys():
 
 @bp.route('/personal-login', methods=['GET', 'POST'])
 def personal_login():
-    """Личный вход пользователя"""
+    """Личный вход участника"""
     if request.method == 'POST':
-        username = request.form.get('username')
+        member_name = request.form.get('member_name')
         personal_password = request.form.get('personal_password')
 
-        user, is_valid = auth_manager.verify_personal_login(username, personal_password)
+        member, is_valid = auth_manager.verify_personal_login(member_name, personal_password)
 
-        if is_valid and user:
-            login_user(user)
-            flash(f'Добро пожаловать, {user.username}!', 'success')
-            return redirect(url_for('frontend.dashboard', team_id=user.team_id))
+        if is_valid and member:
+            login_user(member)
+            flash(f'Добро пожаловать, {member.name}!', 'success')
+            return redirect(url_for('frontend.dashboard', team_id=member.team_id))
         else:
-            flash('Неверное имя пользователя или пароль', 'error')
+            flash('Неверное имя участника или пароль', 'error')
 
     return render_template('personal_login.html')
 
@@ -122,7 +112,7 @@ def purchase_question():
 @login_required
 def transfer_points():
     """Перевод баллов"""
-    to_user_id = request.form.get('to_user_id')
+    to_member_id = request.form.get('to_member_id')
     amount = request.form.get('amount')
     personal_password = request.form.get('personal_password')
 
@@ -134,7 +124,7 @@ def transfer_points():
 
     success, message = wallet_core.transfer_points(
         current_user.id,
-        to_user_id,
+        to_member_id,
         amount,
         personal_password
     )
