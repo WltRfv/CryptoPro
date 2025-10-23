@@ -1,5 +1,5 @@
 from .database import db, Team, Member, Question
-from .encryption import password_hasher
+from .encryption_simple import password_hasher  # ИЗМЕНИТЬ ЭТУ СТРОКУ
 # Импортируем из корневого config.py
 import sys
 import os

@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div style="max-width: 500px; margin: 100px auto;">
+<div style="max-width: 500px; margin: 50px auto;">
     <div class="card">
-        <div class="header">
-            <h1>🔐 Командный Кошелек</h1>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h1>🔐 CryptoPro Кошелек</h1>
             <p>Доступ только через ключи участников</p>
         </div>
 
@@ -29,9 +29,7 @@
         <form id="verifyForm">
             <div class="form-group">
                 <label for="keys_input">Введите ключи (минимум 3):</label>
-                <textarea id="keys_input" name="keys_input" rows="4"
-                         placeholder="Вставьте сюда ключи, полученные на почту. Разделяйте пробелом или запятой."
-                         class="key-input" required></textarea>
+                <textarea id="keys_input" name="keys_input" rows="4" placeholder="Вставьте сюда ключи, полученные на почту. Разделяйте пробелом или запятой." required></textarea>
             </div>
 
             {% if session_token %}
@@ -49,8 +47,8 @@
     <div class="card" style="margin-top: 20px; background: #f8f9fa;">
         <h3>📋 Информация</h3>
         <p><strong>Участники команды:</strong></p>
-        <ul style="margin-left: 20px;">
-            <li>samonov.135@mail.ru</li>
+        <ul>
+            <li>samonov.135@gmail.com</li>
             <li>galkinasnezana788@gmail.com</li>
             <li>lesa85130@gmail.com</li>
             <li>pravolavika@gmail.com</li>
@@ -75,16 +73,15 @@ document.getElementById('verifyForm').addEventListener('submit', function(e) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            resultDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
-            setTimeout(() => {
-                window.location.href = data.redirect_url;
-            }, 2000);
+            resultDiv.innerHTML = '<div class="alert alert-success">' + data.message + '</div>';
+            // НЕМЕДЛЕННЫЙ РЕДИРЕКТ
+            window.location.href = data.redirect_url;
         } else {
-            resultDiv.innerHTML = `<div class="alert alert-error">${data.message}</div>`;
+            resultDiv.innerHTML = '<div class="alert alert-error">' + data.message + '</div>';
         }
     })
     .catch(error => {
-        resultDiv.innerHTML = `<div class="alert alert-error">Ошибка: ${error}</div>`;
+        resultDiv.innerHTML = '<div class="alert alert-error">Ошибка: ' + error + '</div>';
     });
 });
 </script>

@@ -1,109 +1,76 @@
-import secrets
-import hashlib
-from cryptography.fernet import Fernet
-import base64
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from flask import current_app
 
 
-class EncryptionManager:
-    def __init__(self):
-        self.key = None
+class EmailService:
+    def __init__(self, app=None):
+        self.app = app
 
-    def generate_key(self):
-        """Генерирует ключ шифрования"""
-        return Fernet.generate_key()
+    def init_app(self, app):
+        self.app = app
 
-    def initialize_fernet(self, key):
-        """Инициализирует Fernet с ключом"""
-        self.fernet = Fernet(key)
-
-    def encrypt_data(self, data):
-        """Шифрует данные"""
-        if isinstance(data, str):
-            data = data.encode()
-        return self.fernet.encrypt(data).decode()
-
-    def decrypt_data(self, encrypted_data):
-        """Дешифрует данные"""
-        if isinstance(encrypted_data, str):
-            encrypted_data = encrypted_data.encode()
-        return self.fernet.decrypt(encrypted_data).decode()
-
-
-class ShamirSecretManager:
-    @staticmethod
-    def split_secret(secret, shares=4, threshold=3):
+    def send_key_share(self, to_email, key_share, session_token):
         """
-        Упрощенная реализация Shamir's Secret Sharing
-        Генерирует ключи, которые можно комбинировать в любом порядке
+        Отправляет ключ на email участника
         """
-        if isinstance(secret, str):
-            secret = secret.encode()
-
-        # Для демонстрации генерируем случайные ключи
-        # В реальном приложении здесь должна быть криптография
-        shares_list = []
-        for i in range(shares):
-            # Генерируем "ключ" - случайную строку
-            key_part = secrets.token_urlsafe(16)
-            shares_list.append(f"{i + 1}:{key_part}")
-
-        return shares_list
-
-    @staticmethod
-    def reconstruct_secret(shares):
-        """
-        Упрощенная проверка - всегда возвращает успех для демонстрации
-        при наличии минимум 3 ключей
-        """
-        if len(shares) < 3:
-            raise ValueError("Нужно минимум 3 ключа")
-
-        # Для демонстрации просто проверяем что есть 3 ключа правильного формата
-        valid_keys = []
-        for share in shares:
-            if ':' in share and len(share) > 5:  # Простая проверка формата
-                valid_keys.append(share)
-
-        if len(valid_keys) >= 3:
-            return "SUCCESS"  # Возвращаем успех для демонстрации
-        else:
-            raise ValueError("Неверная комбинация ключей")
-
-    @staticmethod
-    def generate_session_token():
-        return secrets.token_urlsafe(16)
-
-
-class PasswordHasher:
-    @staticmethod
-    def hash_password(password):
-        """Хеширует пароль"""
-        salt = secrets.token_hex(16)
-        password_hash = hashlib.pbkdf2_hmac(
-            'sha256',
-            password.encode('utf-8'),
-            salt.encode('utf-8'),
-            100000
-        )
-        return f"{salt}${password_hash.hex()}"
-
-    @staticmethod
-    def verify_password(password, hashed_password):
-        """Проверяет пароль"""
         try:
-            salt, stored_hash = hashed_password.split('$')
-            password_hash = hashlib.pbkdf2_hmac(
-                'sha256',
-                password.encode('utf-8'),
-                salt.encode('utf-8'),
-                100000
-            )
-            return password_hash.hex() == stored_hash
-        except:
+            # Получаем настройки из конфигурации Flask
+            smtp_server = current_app.config.get('MAIL_SERVER')
+            port = current_app.config.get('MAIL_PORT')
+            username = current_app.config.get('MAIL_USERNAME')
+            password = current_app.config.get('MAIL_PASSWORD')
+
+            if not all([smtp_server, username, password]):
+                print(f"❌ Не все настройки email заполнены для отправки на {to_email}")
+                return False
+
+            # Создаем сообщение
+            msg = MIMEMultipart()
+            msg['From'] = username
+            msg['To'] = to_email
+            msg['Subject'] = "🔑 Ключ для доступа к CryptoPro Кошельку"
+
+            body = f"""
+            🚀 Крипто-Кошелек CryptoPro
+
+            Вы получили ключ для доступа к командному кошельку.
+
+            📋 Токен сессии: {session_token}
+            🔐 Ваш ключ: {key_share}
+
+            💡 ИНСТРУКЦИЯ:
+            1. Перейдите на страницу входа: http://localhost:5001
+            2. Введите ЛЮБЫЕ 3 ключа из 4 (включая этот)
+            3. Ключи вводите через пробел или запятую
+
+            ⚠️  Для входа нужно минимум 3 ключа от разных участников!
+            ⏱️  Ключ действителен 15 минут
+
+            Команда CryptoPro 🤝
+            """
+
+            msg.attach(MIMEText(body, 'plain', 'utf-8'))
+
+            # Отправляем email
+            server = smtplib.SMTP(smtp_server, port)
+            server.starttls()
+            server.login(username, password)
+            server.send_message(msg)
+            server.quit()
+
+            print(f"✅ Ключ отправлен на {to_email}")
+            return True
+
+        except smtplib.SMTPAuthenticationError:
+            print(f"❌ Ошибка аутентификации при отправке на {to_email}")
+            print("   Проверьте MAIL_USERNAME и MAIL_PASSWORD в .env")
+            return False
+        except Exception as e:
+            print(f"❌ Ошибка отправки на {to_email}: {e}")
             return False
 
 
-# Создаем глобальные экземпляры
-encryption_manager = EncryptionManager()
-shamir_manager = ShamirSecretManager()
-password_hasher = PasswordHasher()
+# Создаем глобальный экземпляр
+email_service = EmailService()

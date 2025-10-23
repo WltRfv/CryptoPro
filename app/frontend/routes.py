@@ -90,14 +90,12 @@ def dashboard(team_id):
 @bp.route('/purchase-question', methods=['POST'])
 @login_required
 def purchase_question():
-    """Покупка вопроса"""
+    """Покупка вопроса (без пароля)"""
     question_id = request.form.get('question_id')
-    personal_password = request.form.get('personal_password')
 
     success, message = wallet_core.purchase_question(
         question_id,
-        current_user.id,
-        personal_password
+        current_user.id
     )
 
     if success:
@@ -111,10 +109,9 @@ def purchase_question():
 @bp.route('/transfer-points', methods=['POST'])
 @login_required
 def transfer_points():
-    """Перевод баллов"""
+    """Перевод баллов (без пароля)"""
     to_member_id = request.form.get('to_member_id')
     amount = request.form.get('amount')
-    personal_password = request.form.get('personal_password')
 
     try:
         amount = int(amount)
@@ -125,8 +122,7 @@ def transfer_points():
     success, message = wallet_core.transfer_points(
         current_user.id,
         to_member_id,
-        amount,
-        personal_password
+        amount
     )
 
     if success:

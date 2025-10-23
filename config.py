@@ -23,14 +23,14 @@ class Config:
 
 # Конфигурация команды и email
 TEAM_EMAILS = [
-    "samonov.135@mail.ru",
+    "samonov.135@gmail.com",
     "galkinasnezana788@gmail.com",
     "lesa85130@gmail.com",
     "pravolavika@gmail.com"
 ]
 
 TEAM_MEMBERS = [
-    {'name': 'Самонов', 'email': 'samonov.135@mail.ru', 'personal_password': 'pass123', 'points': 250},
+    {'name': 'Самонов', 'email': 'samonov.135@gmail.com', 'personal_password': 'pass123', 'points': 250},
     {'name': 'Галкина', 'email': 'galkinasnezana788@gmail.com', 'personal_password': 'pass123', 'points': 250},
     {'name': 'Лесня', 'email': 'lesa85130@gmail.com', 'personal_password': 'pass123', 'points': 250},
     {'name': 'Лавика', 'email': 'pravolavika@gmail.com', 'personal_password': 'pass123', 'points': 250},

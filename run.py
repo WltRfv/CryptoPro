@@ -6,8 +6,7 @@ app = create_app()
 
 if __name__ == "__main__":
     with app.app_context():
-        # Инициализируем тестовые данные при первом запуске
-        if not os.path.exists('wallet.db'):
+        if not os.path.exists('instance/wallet.db'):
             print("🔄 Инициализация базы данных...")
             init_test_data()
         else:

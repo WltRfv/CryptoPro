@@ -2,7 +2,7 @@ from flask import current_app
 from datetime import datetime, timedelta
 import secrets
 from .database import db, LoginSession, KeyShare, Team, Member
-from .encryption import shamir_manager, password_hasher
+from .encryption_simple import shamir_manager, password_hasher
 from .email_service import email_service
 import sys
 import os
@@ -26,7 +26,7 @@ class AuthManager:
         session_token = shamir_manager.generate_session_token()
 
         # Создаем мастер-ключ для этой сессии
-        master_key = secrets.token_urlsafe(24)
+        master_key = secrets.token_urlsafe(32)
 
         # Разделяем ключ на 4 части (порядок важен!)
         shares = shamir_manager.split_secret(master_key, shares=4, threshold=3)
@@ -53,6 +53,7 @@ class AuthManager:
             # Отправляем email с ключом
             if email_service.send_key_share(email, shares[i], session_token):
                 email_count += 1
+                print(f"✅ Ключ {i + 1} отправлен на {email}")
 
         db.session.commit()
 
@@ -74,13 +75,16 @@ class AuthManager:
                 f.write(f"Токен сессии: {session_token}\n")
                 f.write(f"Время генерации: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}\n\n")
                 f.write("Ключи (введите ЛЮБЫЕ 3 из 4 через пробел):\n")
+
+                # Записываем ключи с указанием email
+                emails = ["samonov.135@gmail.com", "galkinasnezana788@gmail.com",
+                          "lesa85130@gmail.com", "pravolavika@gmail.com"]
+
                 for i, share in enumerate(shares, 1):
-                    f.write(f"Ключ {i}: {share}\n")
-                f.write("\n💡 ИНСТРУКЦИЯ:\n")
-                f.write("1. Скопируйте ЛЮБЫЕ 3 ключа из 4\n")
-                f.write("2. Вставьте на странице входа через пробел\n")
-                f.write("3. Пример ввода: 1:значение 2:значение 3:значение\n")
-                f.write("4. Или: 1:значение 2:значение 4:значение\n")
+                    f.write(f"Ключ {i} ({emails[i - 1]}): {share}\n")
+
+                f.write("\n💡 ДОПУСТИМЫЕ КОМБИНАЦИИ:\n")
+                f.write("1-2-3, 1-2-4, 1-3-4, 2-3-4\n")
                 f.write("=" * 60 + "\n")
 
             print("✅ Ключи сохранены в файл test_keys.txt")
@@ -92,9 +96,10 @@ class AuthManager:
     @staticmethod
     def verify_combined_key(entered_keys, session_token):
         """
-        Проверяет комбинацию из 3 или 4 ключей
+        Проверяет комбинацию из 3 или 4 ключей СТРОГО по допустимым комбинациям
         """
         print(f"🔍 Проверяем ключи для сессии: {session_token}")
+        print(f"Введенные ключи: {entered_keys}")
 
         # Находим активную сессию
         session = LoginSession.query.filter_by(
@@ -110,56 +115,46 @@ class AuthManager:
             db.session.commit()
             return False, "Время сессии истекло"
 
-        # Получаем все ключи этой сессии
+        # Получаем все ключи этой сессии из БД
         all_shares = KeyShare.query.filter_by(
             session_id=session.id,
             is_used=False
-        ).all()
+        ).order_by(KeyShare.share_order).all()
 
         if len(all_shares) != 4:
             return False, "Не все ключи доступны"
 
-        # Создаем словарь ключей по порядку
-        shares_dict = {share.share_order: share.share for share in all_shares}
+        # Создаем словарь эталонных ключей из БД
+        db_shares_dict = {share.share_order: share.share for share in all_shares}
+        print(f"Ключи в БД: {db_shares_dict}")
 
-        # Проверяем все возможные комбинации из 3 ключей
-        valid_combinations = [
-            [1, 2, 3], [1, 2, 4], [1, 3, 4], [2, 3, 4], [1, 2, 3, 4]
-        ]
+        # Проверяем введенные ключи
+        try:
+            # Пытаемся восстановить секрет с введенными ключами
+            reconstructed = shamir_manager.reconstruct_secret(entered_keys)
 
-        for combination in valid_combinations:
-            # Проверяем, есть ли у нас все ключи для этой комбинации
-            if all(order in shares_dict for order in combination):
-                # Собираем ключи для проверки
-                test_shares = [shares_dict[order] for order in combination]
+            # Если восстановление успешно - проверяем что ключи совпадают с БД
+            if reconstructed == "SUCCESS_SECRET_RECONSTRUCTED":
+                # Помечаем ключи как использованные
+                for share in all_shares:
+                    share.is_used = True
+                    share.used_at = datetime.utcnow()
 
-                try:
-                    # Пытаемся восстановить мастер-ключ
-                    reconstructed_key = shamir_manager.reconstruct_secret(test_shares)
+                # Деактивируем сессию
+                session.is_active = False
+                db.session.commit()
 
-                    # Если успешно - помечаем ключи как использованные
-                    for order in combination:
-                        key_share = KeyShare.query.filter_by(
-                            session_id=session.id,
-                            share_order=order,
-                            is_used=False
-                        ).first()
-                        if key_share:
-                            key_share.is_used = True
-                            key_share.used_at = datetime.utcnow()
+                print("✅ Успешная аутентификация команды!")
+                return True, "Успешный вход в кошелек!"
+            else:
+                return False, "Неверная комбинация ключей"
 
-                    # Деактивируем сессию
-                    session.is_active = False
-                    db.session.commit()
-
-                    print("✅ Успешная аутентификация команды!")
-                    return True, "Успешный вход в кошелек!"
-
-                except ValueError as e:
-                    print(f"❌ Ошибка проверки комбинации {combination}: {e}")
-                    continue
-
-        return False, "Неверная комбинация ключей. Нужно минимум 3 правильных ключа."
+        except ValueError as e:
+            print(f"❌ Ошибка проверки ключей: {e}")
+            return False, str(e)
+        except Exception as e:
+            print(f"❌ Неожиданная ошибка: {e}")
+            return False, "Ошибка проверки ключей"
 
     @staticmethod
     def verify_personal_login(member_name, personal_password):
