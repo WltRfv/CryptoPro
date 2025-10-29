@@ -1,16 +1,20 @@
-from .database import db, Team, Member, Question
+# app/backend/init_db.py - ЗАМЕНИ весь код на:
+from .database import db, Team, Member, Question, PublicKey
 from .encryption_simple import password_hasher
+from .rsa_manager import rsa_manager
 
 # Импортируем из корневого config.py
 import sys
 import os
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from config import Config  # ИМПОРТИРУЕМ КЛАСС Config
+from config import Config
 
 from datetime import datetime
 
+
 def init_test_data():
-    """Инициализирует базу данных для ОДНОЙ команды"""
+    """Инициализирует базу данных с RSA ключами"""
     db.drop_all()
     db.create_all()
 
@@ -22,8 +26,8 @@ def init_test_data():
     db.session.add(team)
     db.session.flush()
 
-    # Создаем 4 участника команды с фиксированными email
-    for member_data in Config.TEAM_MEMBERS:  # ИСПОЛЬЗУЕМ Config.
+    # Создаем 4 участника команды
+    for member_data in Config.TEAM_MEMBERS:
         member = Member(
             name=member_data['name'],
             email=member_data['email'],
@@ -33,13 +37,31 @@ def init_test_data():
             is_teacher=False
         )
         db.session.add(member)
+        db.session.flush()  # Получаем ID участника
+
+        # Генерируем RSA ключи для участника
+        private_key, public_key = rsa_manager.generate_key_pair()
+
+        # Сохраняем публичный ключ в базу
+        public_key_record = PublicKey(
+            member_id=member.id,
+            public_key=public_key
+        )
+        db.session.add(public_key_record)
+
+        # Сохраняем приватный ключ в файл для тестирования
+        keys_dir = "user_keys"
+        os.makedirs(keys_dir, exist_ok=True)
+        with open(f"{keys_dir}/{member_data['name']}_private.pem", "w") as f:
+            f.write(private_key)
+        print(f"✅ Сгенерирован ключ для {member_data['name']}")
 
     # Создаем преподавателя
     teacher = Member(
         name="Преподаватель",
         email="teacher@university.ru",
-        personal_password=password_hasher.hash_password(Config.TEACHER_PASSWORD),  # ИСПОЛЬЗУЕМ Config.
-        points=Config.TEACHER_POINTS,  # ИСПОЛЬЗУЕМ Config.
+        personal_password=password_hasher.hash_password(Config.TEACHER_PASSWORD),
+        points=Config.TEACHER_POINTS,
         team_id=team.id,
         is_teacher=True
     )
@@ -63,14 +85,9 @@ def init_test_data():
 
     try:
         db.session.commit()
-        print("✅ База данных инициализирована для ОДНОЙ команды!")
-        print("📧 Email участников:")
-        for email in Config.TEAM_EMAILS:  # ИСПОЛЬЗУЕМ Config.
-            print(f" - {email}")
-        print(f"\n👨‍🏫 Преподаватель создан с паролем: {Config.TEACHER_PASSWORD}")  # ИСПОЛЬЗУЕМ Config.
-        print("\n🔑 Личные логины:")
-        for member in Config.TEAM_MEMBERS:  # ИСПОЛЬЗУЕМ Config.
-            print(f" - {member['name']} / {member['personal_password']}")
+        print("✅ База данных инициализирована с RSA ключами!")
+        print("📁 Приватные ключи сохранены в папку user_keys/")
+        print("🔐 Каждый участник имеет свою пару RSA ключей")
     except Exception as e:
         db.session.rollback()
         print(f"❌ Ошибка: {str(e)}")

@@ -1,4 +1,4 @@
-from flask import current_app
+"""from flask import current_app
 from datetime import datetime, timedelta
 import secrets
 from .database import db, LoginSession, KeyShare, Team, Member
@@ -15,9 +15,9 @@ class AuthManager:
 
     @staticmethod
     def initiate_team_login():
-        """
-        Инициирует процесс входа для команды - отправляет ключи на все email
-        """
+
+        #Инициирует процесс входа для команды - отправляет ключи на все email
+
         try:
             print("🔄 Инициируем вход команды...")
             print(f"📧 Порядок email в конфиге: {AuthManager.TEAM_EMAILS}")
@@ -80,7 +80,7 @@ class AuthManager:
 
     @staticmethod
     def _save_test_keys(shares, session_token):
-        """Сохраняет ключи в файл для тестирования"""
+        #Сохраняет ключи в файл для тестирования
         try:
             with open('test_keys.txt', 'w', encoding='utf-8') as f:
                 f.write("🔐 ТЕСТОВЫЕ КЛЮЧИ ДЛЯ ВХОДА В КРИПТО-КОШЕЛЕК\n")
@@ -111,9 +111,9 @@ class AuthManager:
 
     @staticmethod
     def verify_combined_key(entered_keys, session_token):
-        """
-        Проверяет комбинацию из 3 или 4 ключей СТРОГО по допустимым комбинациям
-        """
+
+        #Проверяет комбинацию из 3 или 4 ключей СТРОГО по допустимым комбинациям
+
         print(f"🔍 Проверяем ключи для сессии: {session_token}")
         print(f"Введенные ключи: {entered_keys}")
 
@@ -174,13 +174,33 @@ class AuthManager:
 
     @staticmethod
     def verify_personal_login(member_name, personal_password):
-        """
-        Проверяет личный логин участника (для операций внутри кошелька)
-        """
+
+        #Проверяет личный логин участника (для операций внутри кошелька)
+
         member = Member.query.filter_by(name=member_name).first()
         if member and password_hasher.verify_password(personal_password, member.personal_password):
             return member, True
         return None, False
 
 # Создаем глобальный экземпляр
+auth_manager = AuthManager()"""
+
+
+from flask import current_app
+from datetime import datetime, timedelta
+import secrets
+from .database import db, LoginSession
+from .signature_auth import signature_auth
+
+
+class AuthManager:
+    """Временный класс-заглушка для совместимости"""
+
+    @staticmethod
+    def initiate_team_login():
+        """Инициирует процесс входа через цифровые подписи"""
+        return signature_auth.initiate_team_login()
+
+
+# Создаем экземпляр для совместимости
 auth_manager = AuthManager()

@@ -1,37 +1,62 @@
+<!-- templates/team_login.html - ЗАМЕНИ весь файл на ЭТУ версию -->
 {% extends "base.html" %}
 
 {% block content %}
-<div style="max-width: 600px; margin: 40px auto;">
+<div style="max-width: 800px; margin: 40px auto;">
     <div class="card" style="text-align: center;">
         <div style="margin-bottom: 30px;">
             <h1>🚀 CryptoPro Кошелек</h1>
-            <p style="color: #667eea; font-size: 1.1em; font-weight: 600;">Доступ только через ключи участников</p>
+            <p style="color: #667eea; font-size: 1.1em; font-weight: 600;">Доступ через цифровые подписи RSA</p>
         </div>
 
         <form method="POST">
             <button type="submit" class="btn btn-primary" style="width: 100%;">
-                📧 Отправить ключи на почту участникам
+                🔐 Начать процесс аутентификации
             </button>
         </form>
 
-        {% if session_token %}
-        <div class="info-box" style="margin-top: 25px;">
-            <h3 style="color: #1a535c; margin-bottom: 10px;">✅ Ключи отправлены!</h3>
-            <p style="margin-bottom: 8px; font-weight: 600;">Токен сессии: <strong>{{ session_token }}</strong></p>
-            <p style="font-size: 0.95em; color: #1a535c;">Проверьте почту всех участников</p>
+        {% if session_token and challenge_message %}
+        <div class="info-box" style="margin-top: 25px; text-align: left;">
+            <h3 style="color: #1a535c; margin-bottom: 15px;">✅ Сессия создана!</h3>
+
+            <div class="form-group">
+                <label>Токен сессии:</label>
+                <input type="text" value="{{ session_token }}" readonly
+                       style="background: #f8f9fa; font-family: 'Courier New', monospace;">
+            </div>
+
+            <div class="form-group">
+                <label>Challenge-сообщение для подписи:</label>
+                <textarea readonly rows="3" style="background: #f8f9fa; font-family: 'Courier New', monospace;"
+                         id="challengeMessage">{{ challenge_message }}</textarea>
+            </div>
+
+            <button class="btn btn-success" onclick="copyChallenge()" style="width: 100%;">
+                📋 Скопировать challenge
+            </button>
         </div>
         {% endif %}
     </div>
 
-    <!-- Форма ввода ключей -->
+    <!-- Форма для ввода подписи -->
     <div class="card">
-        <h2>🔑 Ввод ключей</h2>
+        <h2>✍️ Ввод цифровой подписи</h2>
         <form id="verifyForm">
             <div class="form-group">
-                <label for="keys_input">Введите ключи (минимум 3 из 4):</label>
-                <textarea id="keys_input" name="keys_input" rows="4"
-                         class="key-input"
-                         placeholder="Вставьте сюда ключи, полученные на почту. Разделяйте пробелом или запятой..."
+                <label for="member_name">Имя участника:</label>
+                <select id="member_name" name="member_name" required>
+                    <option value="">Выберите участника</option>
+                    <option value="Самонов">Самонов</option>
+                    <option value="Галкина">Галкина</option>
+                    <option value="Моципан">Моципан</option>
+                    <option value="Исмайлов">Исмайлов</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="signature">Цифровая подпись:</label>
+                <textarea id="signature" name="signature" rows="4"
+                         placeholder="Вставьте сюда вашу цифровую подпись..."
                          required></textarea>
             </div>
 
@@ -40,25 +65,41 @@
             {% endif %}
 
             <button type="submit" class="btn btn-success" style="width: 100%;">
-                🚀 Войти в кошелек
+                🔍 Проверить подпись
             </button>
         </form>
 
         <div id="result" style="margin-top: 20px;"></div>
     </div>
 
+    <!-- Инструкция -->
     <div class="card info-box">
-        <h3>📧 Участники команды</h3>
-        <div class="email-list">
-            <div class="email-item">samonov.135@gmail.com</div>
-            <div class="email-item">galkinasnezana788@gmail.com</div>
-            <div class="email-item">lesa85130@gmail.com</div>
-            <div class="email-item">pravolavika@gmail.com</div>
+        <h3>📖 Инструкция по аутентификации</h3>
+        <ol style="text-align: left; margin: 15px 0; padding-left: 20px;">
+            <li><strong>Нажмите "Начать процесс аутентификации"</strong> - создастся сессия с challenge-сообщением</li>
+            <li><strong>Скопируйте challenge-сообщение</strong> и подпишите его своим приватным ключом</li>
+            <li><strong>Выберите ваше имя</strong> и вставьте полученную подпись в форму</li>
+            <li><strong>Нажмите "Проверить подпись"</strong> - система проверит вашу цифровую подпись</li>
+        </ol>
+
+        <div style="background: #fffbeb; padding: 15px; border-radius: 10px; margin-top: 15px;">
+            <h4 style="color: #d97706;">🔧 Нужна утилита для подписи?</h4>
+            <p>Скачайте или создайте утилиту для подписи RSA ключами.</p>
+            <a href="/signing-tool" class="btn" style="background: #f59e0b; color: white; margin-top: 10px;">
+                🛠️ Открыть утилиту подписи
+            </a>
         </div>
     </div>
 </div>
 
 <script>
+function copyChallenge() {
+    const challengeText = document.getElementById('challengeMessage');
+    challengeText.select();
+    document.execCommand('copy');
+    alert('✅ Challenge скопирован в буфер обмена!');
+}
+
 document.getElementById('verifyForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const formData = new FormData(this);
@@ -66,31 +107,35 @@ document.getElementById('verifyForm').addEventListener('submit', function(e) {
     const resultDiv = document.getElementById('result');
 
     button.disabled = true;
-    button.textContent = '🔍 Проверяем ключи...';
-    resultDiv.innerHTML = '<div class="alert alert-info">🔍 Проверяем комбинацию ключей...</div>';
+    button.textContent = '🔍 Проверяем подпись...';
+    resultDiv.innerHTML = '<div class="alert alert-info">🔍 Проверяем цифровую подпись...</div>';
 
-    fetch('/verify-keys', {
+    fetch('/verify-signature', {
         method: 'POST',
         body: formData
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            resultDiv.innerHTML = '<div class="alert alert-success">' + data.message + ' Перенаправляем в кошелек... 🚀</div>';
-            button.textContent = '✅ Успешно!';
-            setTimeout(() => {
-                window.location.href = data.redirect_url;
-            }, 1500);
+            resultDiv.innerHTML = '<div class="alert alert-success">' + data.message + '</div>';
+            button.textContent = '✅ Подпись верна!';
+
+            // Если нужно перенаправление после успешной проверки
+            if (data.redirect_url) {
+                setTimeout(() => {
+                    window.location.href = data.redirect_url;
+                }, 2000);
+            }
         } else {
             resultDiv.innerHTML = '<div class="alert alert-error">' + data.message + '</div>';
             button.disabled = false;
-            button.textContent = '🚀 Войти в кошелек';
+            button.textContent = '🔍 Проверить подпись';
         }
     })
     .catch(error => {
-        resultDiv.innerHTML = '<div class="alert alert-error">Ошибка соединения: ' + error + '</div>';
+        resultDiv.innerHTML = '<div class="alert alert-error">Ошибка сети: ' + error + '</div>';
         button.disabled = false;
-        button.textContent = '🚀 Войти в кошелек';
+        button.textContent = '🔍 Проверить подпись';
     });
 });
 </script>
