@@ -1,0 +1,315 @@
+{
+  "wallet_id": "312a4ba19f874da1",
+  "public_key": "12baf0b9cb6c059987c97c7c62f58122e6bbe28132053de1ee39a00ab14b1fbe5b0abdb6f8dfe39027d69f662d6258087acfbde8f0d4202bf1266d5a473cca34a8e:eda70f37dcac29251b8467426f77cf625ac7af97648404faeb89945c569660c2c35605fcd95e0f4e43c2a5556f779f5f801248b0ffe7303f175473ece539ff8cdb",
+  "private_key": "4944ec06561536c20385dad812f4a45fc3d21db7ac7f8d000c095dd008f927f3f8cbc1bb69a97e17d11256c48f3dc0312d2ce78ed8901bc06e6349adca6db4cb32",
+  "known_wallets": {},
+  "blockchain": {
+    "chain": [
+      {
+        "index": 0,
+        "previous_hash": "0",
+        "timestamp": "2024-01-01T00:00:00",
+        "transactions": [
+          {
+            "transaction_id": "109288a9d33458b2",
+            "sender": "system",
+            "receiver": "genesis",
+            "amount": 0,
+            "timestamp": "2025-11-06T17:00:54.173141",
+            "type": "genesis",
+            "signature": null,
+            "nonce": null,
+            "metadata": {},
+            "locked": false
+          },
+          {
+            "transaction_id": "694b98d73d19715f",
+            "sender": "system",
+            "receiver": "bank",
+            "amount": 60000,
+            "timestamp": "2025-11-06T17:00:54.173188",
+            "type": "create_bank",
+            "signature": null,
+            "nonce": null,
+            "metadata": {},
+            "locked": false
+          },
+          {
+            "transaction_id": "4d8efcaf658e494c",
+            "sender": "system",
+            "receiver": "de4b557965a28700",
+            "amount": 2500,
+            "timestamp": "2025-11-06T17:00:54.173201",
+            "type": "create",
+            "signature": null,
+            "nonce": null,
+            "metadata": {},
+            "locked": false
+          }
+        ],
+        "miner": "de4b557965a28700",
+        "signature": null,
+        "hash": "edd2bcdb49321366d5165aee9ba977e99ef0d7d846c04a65cca91231f613b3fb"
+      }
+    ],
+    "pending_transactions": [
+      {
+        "transaction_id": "2c7dc09ff58895ee",
+        "sender": "system",
+        "receiver": "4f4ba00959698665",
+        "amount": 2500,
+        "timestamp": "2025-11-06T17:06:58.699151",
+        "type": "create",
+        "signature": null,
+        "nonce": null,
+        "metadata": {},
+        "locked": false
+      },
+      {
+        "transaction_id": "784027a2b4f57d81",
+        "sender": "de4b557965a28700",
+        "receiver": "4f4ba00959698665",
+        "amount": 100.0,
+        "timestamp": "2025-11-06T17:10:48.276455",
+        "type": "transfer",
+        "signature": "MIGIAkIBd/hBvjgmwhIgUi1jN+g7Ug1uECP9/KM2vJAi8ggRy6Ot7UybFLE0smLBChffznhiA/wnWeMm7O6Z+eePpzcdfOACQgF3H3NKJDgcJRwQ57gjufZ/18N8b8Qur3PsQs6wYe/1N8slaIyvPtuam/dpIS8VSCTAgS6cz35GqvrHlibCiAXE5A==",
+        "nonce": 1,
+        "metadata": {},
+        "locked": false
+      },
+      {
+        "transaction_id": "b0dba7e39cc95e5a",
+        "sender": "de4b557965a28700",
+        "receiver": "4f4ba00959698665",
+        "amount": 100.0,
+        "timestamp": "2025-11-06T17:15:54.241703",
+        "type": "transfer",
+        "signature": "MIGIAkIB2G5WNWjyZFj5Hd/kGumURubqy/+SBJyYLZZg15eKrRg2hYialPSAhFyvqTITmHkEe99cZ4wLwWalaw9HO94QBuMCQgF9fAXY9VVblJTiq2GECJ57nJi8bzjuaiEO4QxDmhT01lpONv7faqaP8lxUA2MhWgyN1z9bCIQy8dECf+KBLrnMbA==",
+        "nonce": 2,
+        "metadata": {},
+        "locked": false
+      },
+      {
+        "transaction_id": "3323811238296332",
+        "sender": "system",
+        "receiver": "9b09753f1edaa8ad",
+        "amount": 2500,
+        "timestamp": "2025-11-06T17:26:10.885390",
+        "type": "create",
+        "signature": null,
+        "nonce": null,
+        "metadata": {},
+        "locked": false
+      },
+      {
+        "transaction_id": "2cb6c9a2136e9f88",
+        "sender": "system",
+        "receiver": "3eacc79fb00e55a5",
+        "amount": 2500,
+        "timestamp": "2025-11-06T17:27:59.009320",
+        "type": "create",
+        "signature": null,
+        "nonce": null,
+        "metadata": {},
+        "locked": false
+      },
+      {
+        "transaction_id": "eb4f18d4ef68e142",
+        "sender": "de4b557965a28700",
+        "receiver": "3eacc79fb00e55a5",
+        "amount": 100.0,
+        "timestamp": "2025-11-06T17:29:22.584278",
+        "type": "transfer",
+        "signature": "MIGIAkIB7b9VQxRg9uMNO4rRLFG43PD4wKuzDfDG0EtIc3bzG5ZzNA04ZgOaLg/0GmmZszb9GlrpNYdXh7FtmfsX9Ve9if4CQgEzyKihe1k0ozA+TQ27PCB6sRRKbMXTGBdni4TXbnxuQzqL+L8NLFs8V4GHXoITtTrEM82yqjN7wmyNyL/PLxipZA==",
+        "nonce": 3,
+        "metadata": {},
+        "locked": false
+      },
+      {
+        "transaction_id": "84076d0e31b883c8",
+        "sender": "9b09753f1edaa8ad",
+        "receiver": "de4b557965a28700",
+        "amount": 100.0,
+        "timestamp": "2025-11-06T17:33:43.951001",
+        "type": "transfer",
+        "signature": "MIGIAkIA4w0zBGbBWzHVgo97vQjTft+HuXo8ocs5wc4Hcf4icMUCCKNdfiLMFMUXNrGyt9KRwsYa7ho6R6wXaj1BOKF/RWACQgHmUdqolTFFO9+skk2iK9QYNtZcelVuVOmShELahYX0z9JsvlQwMiHxUMrm730K6rRoK0gxalHstHKhFTr62dC2IQ==",
+        "nonce": 1,
+        "metadata": {},
+        "locked": false
+      },
+      {
+        "transaction_id": "5d94aae08b4e8d42",
+        "sender": "3eacc79fb00e55a5",
+        "receiver": "de4b557965a28700",
+        "amount": 1000.0,
+        "timestamp": "2025-11-06T17:34:12.598171",
+        "type": "transfer",
+        "signature": "MIGIAkIAhFoQLz99Tk3/e5MSscHYqCv9NMBto/KrTUMOhAIx6Yk02IzReRngFX6omf0SUXNqcAPvphmXWhMEcE4XwVyuKhMCQgDw5E5ndliaRzRWsxnfCkf3nVfWBzZq7enZwPblcJpxk8dql0sGr3/hsf7vd8dcU7j8NOIDTpCf43tZ0iLb9AR/Qw==",
+        "nonce": 1,
+        "metadata": {},
+        "locked": false
+      },
+      {
+        "transaction_id": "1863584470ee395e",
+        "sender": "9b09753f1edaa8ad",
+        "receiver": "de4b557965a28700",
+        "amount": 100.0,
+        "timestamp": "2025-11-06T17:38:10.294595",
+        "type": "transfer",
+        "signature": "MIGIAkIA0EZsoxOPW0icYfrXok+mUNf+OYNA2HFRnXuaWE8eT/WEtp+f8CPvtiJjlJeX+9Q1GQdVBM9DkUflh6FLxsvJN0sCQgEAH7YZOtAQ9qmh0oT96vrLkTtB+RhH1ds+6CZ7w+iiYXHfoCviLgANno36WsxaoudGTLGIw3mKf9XHPH1kjvsJsA==",
+        "nonce": 2,
+        "metadata": {},
+        "locked": false
+      },
+      {
+        "transaction_id": "da713bf6797be7dd",
+        "sender": "9b09753f1edaa8ad",
+        "receiver": "3eacc79fb00e55a5",
+        "amount": 100.0,
+        "timestamp": "2025-11-06T17:38:47.080641",
+        "type": "transfer",
+        "signature": "MIGGAkEg/hUNvqvwl7OniZBKgx52UGi7nKc/Dh3clFY+GO3t7+njgYAJZl0Eyw3VcbCQcKMtlHKopplRF5+qXBfaH9B2yAJBHAxMfeRhJJHi5cFURhqDRZpGuNdNPEDwNnylnUVAcH8D+goXjRe5qaYYaVqX+un//coHrxWxUe0xStQoVNS49LI=",
+        "nonce": 3,
+        "metadata": {},
+        "locked": false
+      }
+    ],
+    "block_size": 20,
+    "authority_nodes": [
+      "de4b557965a28700"
+    ],
+    "authority_public_keys": {
+      "de4b557965a28700": "f90ad1a1c61188dc95fd3014dd71bcdde9835e19698662fa5330e7930a450f35aa15abf38c8ba533d07707124bfe3f93bc5b779a04ec51abb1534bfea1f62e1628:ebc5b887dac538ff077564c367262ad044aa9948745668cebde3a9153f719c19d05927ec8139c7314dd9b123db608dd3fe61ae5aacc69660bcc0b48266d419b73c"
+    },
+    "genesis_owner": "de4b557965a28700",
+    "assets": {
+      "13da727d1193ab41": {
+        "created_at": "2025-11-06T17:27:59.009436",
+        "id": "13da727d1193ab41",
+        "owner": "3eacc79fb00e55a5",
+        "transfer_history": []
+      },
+      "18113dd0965a74a1": {
+        "created_at": "2025-11-06T17:26:10.885655",
+        "id": "18113dd0965a74a1",
+        "owner": "9b09753f1edaa8ad",
+        "transfer_history": []
+      },
+      "1a4c5333ab1041d9": {
+        "created_at": "2025-11-06T17:27:59.009443",
+        "id": "1a4c5333ab1041d9",
+        "owner": "3eacc79fb00e55a5",
+        "transfer_history": []
+      },
+      "1bfce7453ce01136": {
+        "created_at": "2025-11-06T17:00:54.173300",
+        "id": "1bfce7453ce01136",
+        "owner": "de4b557965a28700",
+        "transfer_history": []
+      },
+      "1cbabb0a4b810ff5": {
+        "created_at": "2025-11-06T17:26:10.885583",
+        "id": "1cbabb0a4b810ff5",
+        "owner": "9b09753f1edaa8ad",
+        "transfer_history": []
+      },
+      "1db14f2a7bf6e596": {
+        "created_at": "2025-11-06T17:10:25.116816",
+        "id": "1db14f2a7bf6e596",
+        "owner": "4f4ba00959698665",
+        "transfer_history": []
+      },
+      "22de88fdd12ebeed": {
+        "created_at": "2025-11-06T17:26:10.885625",
+        "id": "22de88fdd12ebeed",
+        "owner": "9b09753f1edaa8ad",
+        "transfer_history": []
+      },
+      "2f53882996291729": {
+        "created_at": "2025-11-06T17:00:54.173287",
+        "id": "2f53882996291729",
+        "owner": "de4b557965a28700",
+        "transfer_history": []
+      },
+      "4307c4eea18f9841": {
+        "created_at": "2025-11-06T17:00:54.173277",
+        "id": "4307c4eea18f9841",
+        "owner": "de4b557965a28700",
+        "transfer_history": []
+      },
+      "53a8c1cd6201e12a": {
+        "created_at": "2025-11-06T17:27:59.009428",
+        "id": "53a8c1cd6201e12a",
+        "owner": "3eacc79fb00e55a5",
+        "transfer_history": []
+      },
+      "6ec3f3353a39bc15": {
+        "created_at": "2025-11-06T17:26:10.885708",
+        "id": "6ec3f3353a39bc15",
+        "owner": "9b09753f1edaa8ad",
+        "transfer_history": []
+      },
+      "734dc046f5a0d5c3": {
+        "created_at": "2025-11-06T17:27:59.009408",
+        "id": "734dc046f5a0d5c3",
+        "owner": "3eacc79fb00e55a5",
+        "transfer_history": []
+      },
+      "7c715c73388bbc19": {
+        "created_at": "2025-11-06T17:10:25.116804",
+        "id": "7c715c73388bbc19",
+        "owner": "4f4ba00959698665",
+        "transfer_history": []
+      },
+      "b368cbed7010c8b8": {
+        "created_at": "2025-11-06T17:00:54.173294",
+        "id": "b368cbed7010c8b8",
+        "owner": "de4b557965a28700",
+        "transfer_history": []
+      },
+      "cfc432f4166d4656": {
+        "created_at": "2025-11-06T17:10:25.116810",
+        "id": "cfc432f4166d4656",
+        "owner": "4f4ba00959698665",
+        "transfer_history": []
+      },
+      "d064685817df022c": {
+        "created_at": "2025-11-06T17:00:54.173304",
+        "id": "d064685817df022c",
+        "owner": "de4b557965a28700",
+        "transfer_history": []
+      },
+      "d775e49ce2a77305": {
+        "created_at": "2025-11-06T17:26:10.885682",
+        "id": "d775e49ce2a77305",
+        "owner": "9b09753f1edaa8ad",
+        "transfer_history": []
+      },
+      "f677723e9aa65ab2": {
+        "created_at": "2025-11-06T17:27:59.009421",
+        "id": "f677723e9aa65ab2",
+        "owner": "3eacc79fb00e55a5",
+        "transfer_history": []
+      },
+      "f9eb631c7097ff88": {
+        "created_at": "2025-11-06T17:10:25.116785",
+        "id": "f9eb631c7097ff88",
+        "owner": "4f4ba00959698665",
+        "transfer_history": []
+      },
+      "fc8b6f372a57e851": {
+        "created_at": "2025-11-06T17:10:25.116798",
+        "id": "fc8b6f372a57e851",
+        "owner": "4f4ba00959698665",
+        "transfer_history": []
+      }
+    },
+    "asset_transfers": {}
+  },
+  "last_updated": "2025-11-06T17:47:30.924916",
+  "mac_address": "unknown_mac",
+  "transaction_nonce": 0,
+  "is_first_node": false,
+  "is_authority_node": false,
+  "integrity_hash": "7c0cb980e77a5a95f3d4d7a75bbcabc67b28eb7f891e59fb1030d350560d05ae"
+}

@@ -15,31 +15,44 @@ def index():
 # app/frontend/routes.py - ИСПРАВЛЯЕМ team_login
 @bp.route('/team-login', methods=['GET', 'POST'])
 def team_login():
-    """Упрощенный вход по одному ключу"""
+    """Безопасный вход по цифровой подписи"""
+    challenge_message = None
+
     if request.method == 'POST':
-        member_name = request.form.get('member_name')
-        signature = request.form.get('signature')
-        challenge_message = "CRYPTOPRO_AUTH_CHALLENGE_2024"  # Фиксированный challenge
+        # Если запрос на генерацию challenge
+        if 'generate_challenge' in request.form:
+            member_name = request.form.get('member_name')
+            if member_name:
+                from app.backend.signature_auth import signature_auth
+                challenge_message = signature_auth.generate_secure_challenge(member_name)
+                if challenge_message:
+                    flash('Challenge сгенерирован! Подпишите его.', 'success')
+                else:
+                    flash('Участник не найден', 'error')
 
-        if not all([member_name, signature]):
-            flash('Заполните все поля', 'error')
-            return render_template('team_login.html')
+        # Если запрос на проверку подписи
+        elif 'verify_signature' in request.form:
+            member_name = request.form.get('member_name')
+            signature = request.form.get('signature')
+            challenge_message = request.form.get('challenge_message')
 
-        # Проверяем подпись
-        from app.backend.signature_auth import signature_auth
-        success, result = signature_auth.verify_single_signature(
-            member_name, signature, challenge_message
-        )
+            if not all([member_name, signature, challenge_message]):
+                flash('Заполните все поля', 'error')
+            else:
+                from app.backend.signature_auth import signature_auth
+                success, result = signature_auth.verify_single_signature(
+                    member_name, signature, challenge_message
+                )
 
-        if success:
-            member = result  # result теперь объект Member
-            login_user(member)
-            flash(f'Добро пожаловать, {member.name}!', 'success')
-            return redirect(url_for('frontend.dashboard', team_id=member.team_id))
-        else:
-            flash(result, 'error')  # result теперь сообщение об ошибке
+                if success:
+                    member = result
+                    login_user(member)
+                    flash(f'Безопасный вход выполнен, {member.name}!', 'success')
+                    return redirect(url_for('frontend.dashboard', team_id=member.team_id))
+                else:
+                    flash(result, 'error')
 
-    return render_template('team_login.html')
+    return render_template('team_login.html', challenge_message=challenge_message)
 
 
 @bp.route('/verify-keys', methods=['POST'])
