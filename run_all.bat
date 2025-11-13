@@ -3,7 +3,7 @@ chcp 65001 > nul
 title CryptoPro + Blockchain - Complete System
 
 echo ===============================================
-echo    ЗАПУСК CRYPTOPRO КОШЕЛЬКА И БЛОКЧЕЙН СИСТЕМЫ
+echo ЗАПУСК CRYPTOPRO КОШЕЛЕКА И БЛОКЧЕЙН СИСТЕМЫ
 echo ===============================================
 echo.
 
@@ -13,6 +13,17 @@ if not exist MainProject (
     echo Создайте папку MainProject и поместите туда файлы блокчейн реестра
     pause
     exit /b 1
+)
+
+:: Проверяем SSL сертификаты
+if not exist "localhost+2.pem" (
+    echo ❌ SSL сертификаты не найдены!
+    echo 📝 Генерируем SSL сертификаты...
+    mkcert.exe -install
+    mkcert.exe localhost 127.0.0.1 ::1
+    echo ✅ SSL сертификаты созданы!
+) else (
+    echo ✅ SSL сертификаты найдены
 )
 
 :: Запрос портов
@@ -26,19 +37,19 @@ echo.
 echo ===============================================
 echo 🚀 НАСТРОЙКИ ЗАПУСКА
 echo ===============================================
-echo Блокчейн реестр: localhost:%blockchain_port%
-echo CryptoPro кошелек: localhost:%cryptopro_port%
+echo Блокчейн реестр: http://localhost:%blockchain_port%
+echo CryptoPro кошелек: https://localhost:%cryptopro_port%
 echo.
 
 :: Запуск блокчейн реестра в отдельном окне
 echo Запуск блокчейн реестра...
-start "Blockchain Ledger" cmd /k "cd MainProject && call run.bat --port %blockchain_port%"
+start "Blockchain Ledger" cmd /k "cd MainProject && python api_server.py --port %blockchain_port%"
 
 :: Ждем немного перед запуском кошелька
 timeout /t 5 /nobreak > nul
 
-:: Запуск CryptoPro кошелька
-echo Запуск CryptoPro кошелька...
+:: Запуск CryptoPro кошелька с HTTPS
+echo Запуск CryptoPro кошелька с HTTPS...
 python run.py --port %cryptopro_port% --blockchain-port %blockchain_port%
 
 echo.
