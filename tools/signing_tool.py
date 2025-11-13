@@ -1,32 +1,30 @@
 # tools/signing_tool.py
 import os
 import sys
+import getpass
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from app.backend.rsa_manager import rsa_manager
+from app.backend.rsa_manager import rsa_manager, KeyStorageManager
 
 
-def sign_message_interactive():
-    """Интерактивная утилита для подписи сообщений"""
-    print("🛠️ Утилита для подписи RSA ключами")
+def sign_message_secure():
+    """Безопасная утилита для подписи сообщений"""
+    print("🛠️ Безопасная утилита для подписи RSA ключами")
     print("=" * 50)
 
-    keys_dir = "user_keys"
-    if not os.path.exists(keys_dir):
-        print("❌ Папка с ключами не найдена!")
+    keys_dir = KeyStorageManager.get_keys_directory()
+    key_files = [f for f in os.listdir(keys_dir) if f.endswith('_encrypted.key')]
+
+    if not key_files:
+        print("❌ Зашифрованные ключи не найдены!")
         print("💡 Сначала запустите tools/generate_keys.py")
         return
 
-    key_files = [f for f in os.listdir(keys_dir) if f.endswith('_private.pem')]
-
-    if not key_files:
-        print("❌ Приватные ключи не найдены!")
-        return
-
-    print("📁 Доступные ключи:")
+    print("📁 Доступные зашифрованные ключи:")
     for i, key_file in enumerate(key_files, 1):
-        print(f"  {i}. {key_file}")
+        member_name = key_file.replace('_encrypted.key', '')
+        print(f" {i}. {member_name}")
 
     try:
         choice = int(input("\n🎯 Выберите номер вашего ключа: ")) - 1
@@ -35,13 +33,16 @@ def sign_message_interactive():
             return
 
         selected_key = key_files[choice]
-        key_path = os.path.join(keys_dir, selected_key)
+        member_name = selected_key.replace('_encrypted.key', '')
 
-        # Читаем приватный ключ
-        with open(key_path, 'r', encoding='utf-8') as f:
-            private_key = f.read()
+        # Запрашиваем пароль для расшифровки
+        password = getpass.getpass(f"Введите пароль для ключа {member_name}: ")
 
-        print(f"\n🔑 Используем ключ: {selected_key}")
+        # Загружаем и расшифровываем ключ
+        private_key = KeyStorageManager.load_private_key(member_name, password)
+
+        print(f"✅ Ключ {member_name} успешно загружен!")
+
         print("📋 Введите challenge-сообщение с сайта:")
         message = input("Challenge: ").strip()
 
@@ -64,11 +65,11 @@ def sign_message_interactive():
         else:
             print("❌ Ошибка при подписи сообщения!")
 
-    except ValueError:
-        print("❌ Введите корректный номер!")
+    except ValueError as e:
+        print(f"❌ Ошибка: {e}")
     except Exception as e:
         print(f"❌ Ошибка: {e}")
 
 
 if __name__ == "__main__":
-    sign_message_interactive()
+    sign_message_secure()

@@ -1,95 +1,91 @@
-# app/backend/rsa_manager.py - СОЗДАЙ новый файл
-import base64
-import hashlib
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa as crypto_rsa
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.backends import default_backend
+# Добавляем в конец app/backend/rsa_manager.py
 import os
-import secrets
+import getpass
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+import base64
 
 
-class RSAManager:
+class KeyStorageManager:
     @staticmethod
-    def generate_key_pair():
-        """Генерация пары RSA ключей"""
-        private_key = crypto_rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=2048,
-            backend = default_backend()
-        )
-
-        public_key = private_key.public_key()
-
-        # Сериализация ключей
-        private_pem = private_key.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=serialization.NoEncryption()
-        )
-
-        public_pem = public_key.public_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PublicFormat.SubjectPublicKeyInfo
-        )
-
-        return private_pem.decode('utf-8'), public_pem.decode('utf-8')
+    def get_keys_directory():
+        """Возвращает безопасную папку для ключей"""
+        keys_dir = os.path.join(os.path.expanduser("~"), "cryptopro_keys")
+        os.makedirs(keys_dir, exist_ok=True)
+        return keys_dir
 
     @staticmethod
-    def sign_message(private_key_pem, message):
-        """Подписание сообщения приватным ключом"""
+    def derive_key_from_password(password: str, salt: bytes) -> bytes:
+        """Деривация ключа из пароля"""
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=100000,
+        )
+        return base64.urlsafe_b64encode(kdf.derive(password.encode()))
+
+    @staticmethod
+    def save_encrypted_private_key(member_name: str, private_key_pem: str, password: str):
+        """Сохраняет зашифрованный приватный ключ"""
+        keys_dir = KeyStorageManager.get_keys_directory()
+
+        # Генерируем случайную соль
+        salt = os.urandom(16)
+
+        # Деривируем ключ из пароля
+        key = KeyStorageManager.derive_key_from_password(password, salt)
+        fernet = Fernet(key)
+
+        # Шифруем приватный ключ
+        encrypted_key = fernet.encrypt(private_key_pem.encode())
+
+        # Сохраняем зашифрованный ключ и соль
+        key_filename = f"{member_name}_encrypted.key"
+        key_path = os.path.join(keys_dir, key_filename)
+
+        with open(key_path, 'wb') as f:
+            f.write(salt + encrypted_key)  # Соль + зашифрованные данные
+
+        print(f"✅ Зашифрованный ключ сохранен: {key_path}")
+
+    @staticmethod
+    def load_private_key(member_name: str, password: str) -> str:
+        """Загружает и расшифровывает приватный ключ"""
+        keys_dir = KeyStorageManager.get_keys_directory()
+        key_filename = f"{member_name}_encrypted.key"
+        key_path = os.path.join(keys_dir, key_filename)
+
+        if not os.path.exists(key_path):
+            raise FileNotFoundError(f"Ключ для {member_name} не найден")
+
+        with open(key_path, 'rb') as f:
+            data = f.read()
+
+        # Извлекаем соль и зашифрованные данные
+        salt = data[:16]
+        encrypted_key = data[16:]
+
+        # Деривируем ключ из пароля
+        key = KeyStorageManager.derive_key_from_password(password, salt)
+        fernet = Fernet(key)
+
+        # Расшифровываем ключ
         try:
-            private_key = serialization.load_pem_private_key(
-                private_key_pem.encode('utf-8'),
-                password=None,
-                backend = default_backend()
-            )
-
-            signature = private_key.sign(
-                message.encode('utf-8'),
-                padding.PSS(
-                    mgf=padding.MGF1(hashes.SHA256()),
-                    salt_length=padding.PSS.MAX_LENGTH
-                ),
-                hashes.SHA256()
-            )
-
-            return base64.b64encode(signature).decode('utf-8')
-        except Exception as e:
-            print(f"❌ Ошибка подписи: {e}")
-            return None
+            decrypted_key = fernet.decrypt(encrypted_key)
+            return decrypted_key.decode('utf-8')
+        except Exception:
+            raise ValueError("Неверный пароль для расшифровки ключа")
 
     @staticmethod
-    def verify_signature(public_key_pem, message, signature):
-        """Проверка подписи публичным ключом"""
-        try:
-            public_key = serialization.load_pem_public_key(
-                public_key_pem.encode('utf-8'),
-                backend = default_backend()
-            )
-
-            signature_bytes = base64.b64decode(signature)
-
-            public_key.verify(
-                signature_bytes,
-                message.encode('utf-8'),
-                padding.PSS(
-                    mgf=padding.MGF1(hashes.SHA256()),
-                    salt_length=padding.PSS.MAX_LENGTH
-                ),
-                hashes.SHA256()
-            )
-            return True
-        except Exception as e:
-            print(f"❌ Ошибка проверки подписи: {e}")
-            return False
-
-    @staticmethod
-    def generate_challenge():
-        """Генерация challenge сообщения для подписи"""
-        return f"CRYPTOPRO_AUTH_{secrets.token_urlsafe(32)}"
+    def key_exists(member_name: str) -> bool:
+        """Проверяет существует ли зашифрованный ключ"""
+        keys_dir = KeyStorageManager.get_keys_directory()
+        key_filename = f"{member_name}_encrypted.key"
+        key_path = os.path.join(keys_dir, key_filename)
+        return os.path.exists(key_path)
 
 
-# Глобальный экземпляр
-rsa_manager = RSAManager()
+# Создаем глобальный экземпляр
+key_storage = KeyStorageManager()
