@@ -1,20 +1,13 @@
-# app/backend/init_db.py - ЗАМЕНИ весь код на:
-from .database import db, Team, Member, Question, PublicKey
+from .database import db, Team, Member, Question
 from .encryption_simple import password_hasher
-from .rsa_manager import rsa_manager
-
-# Импортируем из корневого config.py
 import sys
 import os
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from config import Config
-
 from datetime import datetime
 
-
 def init_test_data():
-    """Инициализирует базу данных с RSA ключами"""
+    """Инициализирует базу данных для ОДНОЙ команды"""
     db.drop_all()
     db.create_all()
 
@@ -26,7 +19,7 @@ def init_test_data():
     db.session.add(team)
     db.session.flush()
 
-    # Создаем 4 участника команды
+    # Создаем 4 участника команды с фиксированными email
     for member_data in Config.TEAM_MEMBERS:
         member = Member(
             name=member_data['name'],
@@ -37,24 +30,6 @@ def init_test_data():
             is_teacher=False
         )
         db.session.add(member)
-        db.session.flush()  # Получаем ID участника
-
-        # Генерируем RSA ключи для участника
-        private_key, public_key = rsa_manager.generate_key_pair()
-
-        # Сохраняем публичный ключ в базу
-        public_key_record = PublicKey(
-            member_id=member.id,
-            public_key=public_key
-        )
-        db.session.add(public_key_record)
-
-        # Сохраняем приватный ключ в файл для тестирования
-        keys_dir = "user_keys"
-        os.makedirs(keys_dir, exist_ok=True)
-        with open(f"{keys_dir}/{member_data['name']}_private.pem", "w") as f:
-            f.write(private_key)
-        print(f"✅ Сгенерирован ключ для {member_data['name']}")
 
     # Создаем преподавателя
     teacher = Member(
@@ -85,9 +60,10 @@ def init_test_data():
 
     try:
         db.session.commit()
-        print("✅ База данных инициализирована с RSA ключами!")
-        print("📁 Приватные ключи сохранены в папку user_keys/")
-        print("🔐 Каждый участник имеет свою пару RSA ключей")
+        print("✅ База данных инициализирована для ОДНОЙ команды!")
+        print("👥 Участники созданы:")
+        for member in Config.TEAM_MEMBERS:
+            print(f" - {member['name']}")
     except Exception as e:
         db.session.rollback()
         print(f"❌ Ошибка: {str(e)}")

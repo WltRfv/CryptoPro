@@ -1,108 +1,101 @@
-# app/backend/signature_auth.py - СОЗДАЙ новый файл
-from flask import current_app
-from datetime import datetime, timedelta
+import hashlib
 import secrets
-from .database import db, LoginSession, Member, PublicKey, SignatureVerification
+from datetime import datetime, timedelta
+
+from .database import db, Member, PublicKey
 from .rsa_manager import rsa_manager
 
 
 class SignatureAuthManager:
-    @staticmethod
-    def initiate_team_login():
-        """Инициирует процесс входа через цифровые подписи"""
+    def __init__(self):
+        self.used_signatures = {}  # Кэш использованных подписей
+
+    def generate_secure_challenge(self, member_name):
+        """Генерирует уникальный challenge с таймстампом"""
+        member = Member.query.filter_by(name=member_name).first()
+        if not member:
+            return None
+
+        timestamp = int(datetime.utcnow().timestamp())
+        random_part = secrets.token_urlsafe(16)
+        challenge = f"CRYPTO_AUTH_{member.id}_{timestamp}_{random_part}"
+
+        # Сохраняем challenge для проверки свежести
+        self.used_signatures[f"challenge_{challenge}"] = datetime.utcnow()
+        return challenge
+
+    def verify_challenge_freshness(self, challenge):
+        """Проверяет что challenge свежий (не старше 2 минут)"""
+        if not challenge.startswith("CRYPTO_AUTH_"):
+            return False
+
         try:
-            # Генерируем session token и challenge
-            session_token = secrets.token_urlsafe(32)
-            challenge_message = rsa_manager.generate_challenge()
+            parts = challenge.split('_')
+            timestamp = int(parts[3])
+            current_time = datetime.utcnow().timestamp()
+            return (current_time - timestamp) < 120  # 2 минуты
+        except:
+            return False
 
-            # Сохраняем сессию
-            login_session = LoginSession(
-                session_token=session_token,
-                challenge_message=challenge_message,
-                expires_at=datetime.utcnow() + timedelta(minutes=10)
-            )
-            db.session.add(login_session)
-            db.session.commit()
+    def prevent_replay_attack(self, signature):
+        """Защита от повторного использования подписи"""
+        signature_hash = hashlib.sha256(signature.encode()).hexdigest()
+        if signature_hash in self.used_signatures:
+            return False
+        # Храним подпись 5 минут
+        self.used_signatures[signature_hash] = datetime.utcnow()
+        return True
 
-            return session_token, challenge_message
+    def cleanup_old_signatures(self):
+        """Очистка старых подписей из кэша"""
+        now = datetime.utcnow()
+        expired = []
+        for sig_hash, timestamp in self.used_signatures.items():
+            if (now - timestamp) > timedelta(minutes=5):
+                expired.append(sig_hash)
+        for sig_hash in expired:
+            del self.used_signatures[sig_hash]
 
-        except Exception as e:
-            print(f"❌ Ошибка в initiate_team_login: {e}")
-            db.session.rollback()
-            return None, f"Ошибка: {str(e)}"
-
-    @staticmethod
-    def verify_member_signature(session_token, member_name, signature):
-        """Проверяет цифровую подпись участника"""
+    def verify_single_signature(self, member_name, signature, challenge_message):
+        """Проверяет цифровую подпись с защитой от атак"""
         try:
-            # Находим активную сессию
-            session = LoginSession.query.filter_by(
-                session_token=session_token,
-                is_active=True
-            ).first()
+            print(f"🔍 Проверяем вход для: '{member_name}'")
 
-            if not session:
-                return False, "Сессия не найдена или неактивна"
+            # Очистка старых подписей
+            self.cleanup_old_signatures()
 
-            if datetime.utcnow() > session.expires_at:
-                session.is_active = False
-                db.session.commit()
-                return False, "Время сессии истекло"
+            # Проверяем свежесть challenge
+            if not self.verify_challenge_freshness(challenge_message):
+                return False, "Устаревший или неверный challenge"
+
+            # Защита от replay-атак
+            if not self.prevent_replay_attack(signature):
+                return False, "Подпись уже использовалась"
 
             # Находим участника
             member = Member.query.filter_by(name=member_name).first()
             if not member:
                 return False, "Участник не найден"
 
-            # Находим публичный ключ участника
+            # Находим публичный ключ
             public_key = PublicKey.query.filter_by(member_id=member.id).first()
             if not public_key:
-                return False, "Публичный ключ участника не найден"
+                return False, "Публичный ключ не зарегистрирован"
 
             # Проверяем подпись
             if rsa_manager.verify_signature(
                     public_key.public_key,
-                    session.challenge_message,
+                    challenge_message,
                     signature
             ):
-                # Сохраняем факт верификации
-                verification = SignatureVerification(
-                    session_id=session.id,
-                    member_id=member.id,
-                    signature=signature,
-                    is_valid=True
-                )
-                db.session.add(verification)
-                db.session.commit()
-
-                return True, "Подпись успешно проверена"
+                print(f"✅ Успешный безопасный вход: {member.name}")
+                return True, member
             else:
-                # Сохраняем неудачную попытку
-                verification = SignatureVerification(
-                    session_id=session.id,
-                    member_id=member.id,
-                    signature=signature,
-                    is_valid=False
-                )
-                db.session.add(verification)
-                db.session.commit()
                 return False, "Неверная подпись"
 
         except Exception as e:
-            db.session.rollback()
-            return False, f"Ошибка проверки: {str(e)}"
-
-    @staticmethod
-    def get_verified_members_count(session_token):
-        """Возвращает количество участников, подтвердивших вход"""
-        session = LoginSession.query.filter_by(session_token=session_token).first()
-        if not session:
-            return 0
-
-        return SignatureVerification.query.filter_by(
-            session_id=session.id,
-            is_valid=True
-        ).count()
+            print(f"❌ Ошибка при проверке подписи: {e}")
+            return False, f"Ошибка: {str(e)}"
 
 
 # Глобальный экземпляр

@@ -12,35 +12,47 @@ def index():
     return redirect(url_for('frontend.team_login'))
 
 
+# app/frontend/routes.py - ИСПРАВЛЯЕМ team_login
 @bp.route('/team-login', methods=['GET', 'POST'])
 def team_login():
-    """Единственная страница входа - только через цифровые подписи"""
-    print("🚀 Загружена страница team-login")
-    session_token = None
+    """Безопасный вход по цифровой подписи"""
     challenge_message = None
 
     if request.method == 'POST':
-        print("🔐 Начинаем процесс RSA аутентификации...")
-        try:
-            from app.backend.signature_auth import signature_auth
-            result = signature_auth.initiate_team_login()
-            if result and len(result) == 2:
-                session_token, challenge_message = result
-                flash("Сессия создана! Подпишите challenge-сообщение.", 'success')
+        # Если запрос на генерацию challenge
+        if 'generate_challenge' in request.form:
+            member_name = request.form.get('member_name')
+            if member_name:
+                from app.backend.signature_auth import signature_auth
+                challenge_message = signature_auth.generate_secure_challenge(member_name)
+                if challenge_message:
+                    flash('Challenge сгенерирован! Подпишите его.', 'success')
+                else:
+                    flash('Участник не найден', 'error')
+
+        # Если запрос на проверку подписи
+        elif 'verify_signature' in request.form:
+            member_name = request.form.get('member_name')
+            signature = request.form.get('signature')
+            challenge_message = request.form.get('challenge_message')
+
+            if not all([member_name, signature, challenge_message]):
+                flash('Заполните все поля', 'error')
             else:
-                flash("Ошибка при создании сессии. Попробуйте еще раз.", 'error')
-        except Exception as e:
-            print(f"❌ Ошибка в team_login: {e}")
-            flash(f"Ошибка при создании сессии: {str(e)}", 'error')
+                from app.backend.signature_auth import signature_auth
+                success, result = signature_auth.verify_single_signature(
+                    member_name, signature, challenge_message
+                )
 
-    # ВЫХОДИМ ИЗ СИСТЕМЫ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ ВХОДА
-    if current_user.is_authenticated:
-        logout_user()
-        print("🔒 Пользователь разлогинен при загрузке страницы входа")
+                if success:
+                    member = result
+                    login_user(member)
+                    flash(f'Безопасный вход выполнен, {member.name}!', 'success')
+                    return redirect(url_for('frontend.dashboard', team_id=member.team_id))
+                else:
+                    flash(result, 'error')
 
-    return render_template('team_login.html',
-                         session_token=session_token,
-                         challenge_message=challenge_message)
+    return render_template('team_login.html', challenge_message=challenge_message)
 
 
 @bp.route('/verify-keys', methods=['POST'])
@@ -66,6 +78,7 @@ def verify_keys():
     print(f"✅ Результат проверки: success={success}, message={message}")
 
     if success:
+
         # Получаем команду (у нас только одна)
         team = Team.query.first()
         if team:
@@ -232,6 +245,11 @@ def verify_signature():
     print(f"✅ Результат проверки: success={success}, message={message}")
 
     if success:
+        member = Member.query.filter_by(name=member_name).first()
+        if member:
+            login_user(member)  # 🔴 ДОБАВЬ ЭТУ СТРОКУ!
+            print(f"✅ Успешный вход как {member.name}")
+
         # Получаем команду (у нас только одна)
         team = Team.query.first()
         if team:

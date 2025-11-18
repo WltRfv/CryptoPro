@@ -1,51 +1,23 @@
-<!-- templates/team_login.html - ЗАМЕНИ весь файл на ЭТУ версию -->
 {% extends "base.html" %}
 
 {% block content %}
-<div style="max-width: 800px; margin: 40px auto;">
+<div style="max-width: 600px; margin: 40px auto;">
     <div class="card" style="text-align: center;">
-        <div style="margin-bottom: 30px;">
-            <h1>🚀 CryptoPro Кошелек</h1>
-            <p style="color: #667eea; font-size: 1.1em; font-weight: 600;">Доступ через цифровые подписи RSA</p>
-        </div>
-
-        <form method="POST">
-            <button type="submit" class="btn btn-primary" style="width: 100%;">
-                🔐 Начать процесс аутентификации
-            </button>
-        </form>
-
-        {% if session_token and challenge_message %}
-        <div class="info-box" style="margin-top: 25px; text-align: left;">
-            <h3 style="color: #1a535c; margin-bottom: 15px;">✅ Сессия создана!</h3>
-
-            <div class="form-group">
-                <label>Токен сессии:</label>
-                <input type="text" value="{{ session_token }}" readonly
-                       style="background: #f8f9fa; font-family: 'Courier New', monospace;">
-            </div>
-
-            <div class="form-group">
-                <label>Challenge-сообщение для подписи:</label>
-                <textarea readonly rows="3" style="background: #f8f9fa; font-family: 'Courier New', monospace;"
-                         id="challengeMessage">{{ challenge_message }}</textarea>
-            </div>
-
-            <button class="btn btn-success" onclick="copyChallenge()" style="width: 100%;">
-                📋 Скопировать challenge
-            </button>
-        </div>
-        {% endif %}
+        <h1>🚀 CryptoPro Кошелек</h1>
+        <p style="color: #667eea;">Безопасный вход по цифровой подписи</p>
     </div>
 
-    <!-- Форма для ввода подписи -->
     <div class="card">
-        <h2>✍️ Ввод цифровой подписи</h2>
-        <form id="verifyForm">
+        <h2>🔐 Двухэтапная аутентификация</h2>
+
+        <!-- Шаг 1: Выбор пользователя и генерация challenge -->
+        <form method="POST">
+            <input type="hidden" name="generate_challenge" value="1">
+
             <div class="form-group">
-                <label for="member_name">Имя участника:</label>
+                <label for="member_name">Ваше имя:</label>
                 <select id="member_name" name="member_name" required>
-                    <option value="">Выберите участника</option>
+                    <option value="">Выберите ваше имя</option>
                     <option value="Самонов">Самонов</option>
                     <option value="Галкина">Галкина</option>
                     <option value="Моципан">Моципан</option>
@@ -53,40 +25,60 @@
                 </select>
             </div>
 
-            <div class="form-group">
-                <label for="signature">Цифровая подпись:</label>
-                <textarea id="signature" name="signature" rows="4"
-                         placeholder="Вставьте сюда вашу цифровую подпись..."
-                         required></textarea>
-            </div>
-
-            {% if session_token %}
-            <input type="hidden" id="session_token" name="session_token" value="{{ session_token }}">
-            {% endif %}
-
-            <button type="submit" class="btn btn-success" style="width: 100%;">
-                🔍 Проверить подпись
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                🔄 Сгенерировать Challenge
             </button>
         </form>
 
-        <div id="result" style="margin-top: 20px;"></div>
+        <!-- Шаг 2: Показ challenge и ввод подписи -->
+        {% if challenge_message %}
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #f0f4f8;">
+            <h3>📝 Challenge для подписи:</h3>
+
+            <div class="form-group">
+                <label>Скопируйте этот текст:</label>
+                <textarea id="challengeField" readonly
+                    style="background: #f8f9fa; font-family: 'Courier New', monospace; font-weight: bold;"
+                    rows="3">{{ challenge_message }}</textarea>
+            </div>
+
+            <button class="btn btn-success" onclick="copyChallenge()" style="width: 100%; margin-bottom: 20px;">
+                📋 Скопировать Challenge
+            </button>
+
+            <form method="POST">
+                <input type="hidden" name="verify_signature" value="1">
+                <input type="hidden" name="member_name" value="{{ request.form.member_name }}">
+                <input type="hidden" name="challenge_message" value="{{ challenge_message }}">
+
+                <div class="form-group">
+                    <label for="signature">Вставьте вашу подпись:</label>
+                    <textarea id="signature" name="signature" rows="4"
+                        placeholder="Вставьте сюда цифровую подпись..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-success" style="width: 100%;">
+                    🔍 Проверить подпись и войти
+                </button>
+            </form>
+        </div>
+        {% endif %}
     </div>
 
     <!-- Инструкция -->
     <div class="card info-box">
-        <h3>📖 Инструкция по аутентификации</h3>
+        <h3>📖 Как войти безопасно:</h3>
         <ol style="text-align: left; margin: 15px 0; padding-left: 20px;">
-            <li><strong>Нажмите "Начать процесс аутентификации"</strong> - создастся сессия с challenge-сообщением</li>
-            <li><strong>Скопируйте challenge-сообщение</strong> и подпишите его своим приватным ключом</li>
-            <li><strong>Выберите ваше имя</strong> и вставьте полученную подпись в форму</li>
-            <li><strong>Нажмите "Проверить подпись"</strong> - система проверит вашу цифровую подпись</li>
+            <li><strong>Выберите ваше имя</strong> и нажмите "Сгенерировать Challenge"</li>
+            <li><strong>Скопируйте challenge</strong> и подпишите его на своем компьютере</li>
+            <li><strong>Вставьте полученную подпись</strong> в форму и нажмите "Войти"</li>
         </ol>
 
         <div style="background: #fffbeb; padding: 15px; border-radius: 10px; margin-top: 15px;">
             <h4 style="color: #d97706;">🔧 Нужна утилита для подписи?</h4>
-            <p>Скачайте или создайте утилиту для подписи RSA ключами.</p>
+            <p>Скачайте клиентскую утилиту для безопасной подписи на вашем компьютере.</p>
             <a href="/signing-tool" class="btn" style="background: #f59e0b; color: white; margin-top: 10px;">
-                🛠️ Открыть утилиту подписи
+                🛠️ Открыть инструкцию
             </a>
         </div>
     </div>
@@ -94,49 +86,10 @@
 
 <script>
 function copyChallenge() {
-    const challengeText = document.getElementById('challengeMessage');
+    const challengeText = document.getElementById('challengeField');
     challengeText.select();
     document.execCommand('copy');
-    alert('✅ Challenge скопирован в буфер обмена!');
+    alert('✅ Challenge скопирован! Теперь подпишите его.');
 }
-
-document.getElementById('verifyForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    const button = this.querySelector('button');
-    const resultDiv = document.getElementById('result');
-
-    button.disabled = true;
-    button.textContent = '🔍 Проверяем подпись...';
-    resultDiv.innerHTML = '<div class="alert alert-info">🔍 Проверяем цифровую подпись...</div>';
-
-    fetch('/verify-signature', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            resultDiv.innerHTML = '<div class="alert alert-success">' + data.message + '</div>';
-            button.textContent = '✅ Подпись верна!';
-
-            // Если нужно перенаправление после успешной проверки
-            if (data.redirect_url) {
-                setTimeout(() => {
-                    window.location.href = data.redirect_url;
-                }, 2000);
-            }
-        } else {
-            resultDiv.innerHTML = '<div class="alert alert-error">' + data.message + '</div>';
-            button.disabled = false;
-            button.textContent = '🔍 Проверить подпись';
-        }
-    })
-    .catch(error => {
-        resultDiv.innerHTML = '<div class="alert alert-error">Ошибка сети: ' + error + '</div>';
-        button.disabled = false;
-        button.textContent = '🔍 Проверить подпись';
-    });
-});
 </script>
 {% endblock %}

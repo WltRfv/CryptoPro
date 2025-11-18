@@ -38,3 +38,7 @@ class Config:
         {'name': 'Моципан', 'email': 'lesa85130@gmail.com', 'personal_password': 'pass123', 'points': 250},
         {'name': 'Исмайлов', 'email': 'pravolavika@gmail.com', 'personal_password': 'pass123', 'points': 250},
     ]
+
+    BLOCKCHAIN_ENABLED = True
+    BLOCKCHAIN_PORT = 5000
+    BLOCKCHAIN_PEERS = os.environ.get('BLOCKCHAIN_PEERS', '').split(',')

@@ -1,3 +1,4 @@
+# tools/signing_tool.py
 import os
 import sys
 
@@ -11,10 +12,10 @@ def sign_message_interactive():
     print("🛠️ Утилита для подписи RSA ключами")
     print("=" * 50)
 
-    # Показываем доступные ключи
     keys_dir = "user_keys"
     if not os.path.exists(keys_dir):
         print("❌ Папка с ключами не найдена!")
+        print("💡 Сначала запустите tools/generate_keys.py")
         return
 
     key_files = [f for f in os.listdir(keys_dir) if f.endswith('_private.pem')]
@@ -27,9 +28,8 @@ def sign_message_interactive():
     for i, key_file in enumerate(key_files, 1):
         print(f"  {i}. {key_file}")
 
-    # Выбор ключа
     try:
-        choice = int(input("\n🎯 Выберите номер ключа: ")) - 1
+        choice = int(input("\n🎯 Выберите номер вашего ключа: ")) - 1
         if choice < 0 or choice >= len(key_files):
             print("❌ Неверный выбор!")
             return
@@ -38,27 +38,28 @@ def sign_message_interactive():
         key_path = os.path.join(keys_dir, selected_key)
 
         # Читаем приватный ключ
-        with open(key_path, 'r') as f:
+        with open(key_path, 'r', encoding='utf-8') as f:
             private_key = f.read()
 
-        # Ввод сообщения для подписи
         print(f"\n🔑 Используем ключ: {selected_key}")
-        message = input("📝 Введите сообщение для подписи: ")
+        print("📋 Введите challenge-сообщение с сайта:")
+        message = input("Challenge: ").strip()
 
         if not message:
             print("❌ Сообщение не может быть пустым!")
             return
 
         # Подписываем сообщение
+        print("🔐 Подписываем сообщение...")
         signature = rsa_manager.sign_message(private_key, message)
 
         if signature:
             print("\n" + "=" * 50)
             print("✅ СООБЩЕНИЕ УСПЕШНО ПОДПИСАНО!")
             print("=" * 50)
-            print(f"📋 Исходное сообщение: {message}")
-            print(f"🔐 Цифровая подпись: {signature}")
-            print("\n💡 Скопируйте подпись и вставьте в форму на сайте")
+            print(f"🔐 Цифровая подпись:")
+            print(signature)
+            print("\n💡 Скопируйте ЭТУ подпись и вставьте в форму на сайте")
             print("=" * 50)
         else:
             print("❌ Ошибка при подписи сообщения!")
