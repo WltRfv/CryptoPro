@@ -1,0 +1,280 @@
+{
+  "wallet_id": "5595a33ccd2b0c2d",
+  "public_key": "596719d6e03f630013edb58e7a2c89e89c5e634c3aedd6e9d4187961fa2d424b099f539e32aabd9b30486633a93f646708c8859d830a1287f90ed882979610cf95:3a396f4f35d86b8f70dd24c38f47d54c487243c41f0f5bc47f4413a53bc3012aa937e7a8466a1c65a1b7ceb3261e2a213efd13d251fed56941aa19dc848380c998",
+  "private_key": "1c77eea52f95a53f2ce2b6ca69c2647577048981d2a3f71a2d965dc38f0c42073e2da542cf82707e91cecc52db6e087871efe8e5aec8a5a3cc059d2a36a803d67",
+  "known_wallets": {
+    "bank": {
+      "balance": 60000,
+      "public_key": null,
+      "last_updated": "2024-01-01T00:00:00",
+      "assets_count": 0,
+      "is_authority_node": false
+    },
+    "aac7511730d02024": {
+      "balance": 2400,
+      "public_key": "90985fffc6dd190fcd1dd8fc65514622596618b5ca0815d8fa03dde995296def8084d5aeb00377a868771179f2be18144db46f9e668d49ec41725f2c24de967c3c:1ac32e09f7c015add017f22d90b4794578397a6ac89a6f8e09fbaa4323959d7c9e36c10dd41e7c5e944abd0c221dd781d9cbe649feed85ac025eea498da498958f3",
+      "last_updated": "2025-11-13T19:06:50.113718",
+      "assets_count": 7,
+      "is_authority_node": true
+    },
+    "79bff7f15f99b280": {
+      "balance": 2600,
+      "public_key": null,
+      "last_updated": "2025-11-13T19:08:43.529070",
+      "assets_count": 5,
+      "is_authority_node": false
+    },
+    "5595a33ccd2b0c2d": {
+      "balance": 2500,
+      "public_key": "596719d6e03f630013edb58e7a2c89e89c5e634c3aedd6e9d4187961fa2d424b099f539e32aabd9b30486633a93f646708c8859d830a1287f90ed882979610cf95:3a396f4f35d86b8f70dd24c38f47d54c487243c41f0f5bc47f4413a53bc3012aa937e7a8466a1c65a1b7ceb3261e2a213efd13d251fed56941aa19dc848380c998",
+      "last_updated": "2025-11-13T19:08:42.657241",
+      "is_authority_node": false,
+      "assets_count": 5
+    }
+  },
+  "blockchain": {
+    "chain": [
+      {
+        "index": 0,
+        "previous_hash": "0",
+        "timestamp": "2024-01-01T00:00:00",
+        "transactions": [
+          {
+            "transaction_id": "00d0e7e59f34c5c9",
+            "sender": "system",
+            "receiver": "genesis",
+            "amount": 0,
+            "timestamp": "2025-11-13T19:01:26.181912",
+            "type": "genesis",
+            "signature": null,
+            "nonce": null,
+            "metadata": {},
+            "locked": false
+          },
+          {
+            "transaction_id": "479aea86d1944dac",
+            "sender": "system",
+            "receiver": "bank",
+            "amount": 60000,
+            "timestamp": "2025-11-13T19:01:26.181912",
+            "type": "create_bank",
+            "signature": null,
+            "nonce": null,
+            "metadata": {},
+            "locked": false
+          },
+          {
+            "transaction_id": "3c4190eb0148f9cc",
+            "sender": "system",
+            "receiver": "aac7511730d02024",
+            "amount": 2500,
+            "timestamp": "2025-11-13T19:01:26.181912",
+            "type": "create",
+            "signature": null,
+            "nonce": null,
+            "metadata": {},
+            "locked": false
+          }
+        ],
+        "miner": "aac7511730d02024",
+        "signature": null,
+        "hash": "09bd816ef988e130b1d4114407a4090a656c951d9f5da5e316d8e59861944b3b"
+      }
+    ],
+    "pending_transactions": [
+      {
+        "transaction_id": "1fa9c93af77989fa",
+        "sender": "system",
+        "receiver": "79bff7f15f99b280",
+        "amount": 2500,
+        "timestamp": "2025-11-13T19:03:02.025898",
+        "type": "create",
+        "signature": null,
+        "nonce": null,
+        "metadata": {},
+        "locked": false
+      },
+      {
+        "transaction_id": "3b2e4192a143a4e1",
+        "sender": "system",
+        "receiver": "5595a33ccd2b0c2d",
+        "amount": 2500,
+        "timestamp": "2025-11-13T19:05:44.593915",
+        "type": "create",
+        "signature": null,
+        "nonce": null,
+        "metadata": {},
+        "locked": false
+      },
+      {
+        "transaction_id": "84347dbbcc765b74",
+        "sender": "79bff7f15f99b280",
+        "receiver": "aac7511730d02024",
+        "amount": 100,
+        "timestamp": "2025-11-13T19:07:18.842014",
+        "type": "transfer",
+        "signature": null,
+        "nonce": 1,
+        "metadata": {
+          "asset_id": "850c6eb13a35a298",
+          "is_asset_transfer": true,
+          "transfer_id": "5950369631d33289"
+        },
+        "locked": false
+      },
+      {
+        "transaction_id": "ad190222ceb1edcc",
+        "sender": "aac7511730d02024",
+        "receiver": "79bff7f15f99b280",
+        "amount": 200,
+        "timestamp": "2025-11-13T19:07:18.842014",
+        "type": "transfer",
+        "signature": null,
+        "nonce": 1,
+        "metadata": {
+          "asset_id": "850c6eb13a35a298",
+          "is_penalty": true,
+          "transfer_id": "5950369631d33289"
+        },
+        "locked": false
+      }
+    ],
+    "block_size": 20,
+    "authority_nodes": [
+      "aac7511730d02024"
+    ],
+    "authority_public_keys": {
+      "aac7511730d02024": "90985fffc6dd190fcd1dd8fc65514622596618b5ca0815d8fa03dde995296def8084d5aeb00377a868771179f2be18144db46f9e668d49ec41725f2c24de967c3c:1ac32e09f7c015add017f22d90b4794578397a6ac89a6f8e09fbaa4323959d7c9e36c10dd41e7c5e944abd0c221dd781d9cbe649feed85ac025eea498da498958f3"
+    },
+    "genesis_owner": "aac7511730d02024",
+    "assets": {
+      "0be99e211905cb01": {
+        "id": "0be99e211905cb01",
+        "owner": "aac7511730d02024",
+        "created_at": "2025-11-13T19:01:26.182909",
+        "transfer_history": []
+      },
+      "e7d55f7aaccefe8d": {
+        "id": "e7d55f7aaccefe8d",
+        "owner": "aac7511730d02024",
+        "created_at": "2025-11-13T19:01:26.182909",
+        "transfer_history": []
+      },
+      "79fd68af161e7599": {
+        "id": "79fd68af161e7599",
+        "owner": "aac7511730d02024",
+        "created_at": "2025-11-13T19:01:26.182909",
+        "transfer_history": []
+      },
+      "bd40b9ca6e5955ff": {
+        "id": "bd40b9ca6e5955ff",
+        "owner": "aac7511730d02024",
+        "created_at": "2025-11-13T19:01:26.182909",
+        "transfer_history": []
+      },
+      "4b7c7cc36f67e2e2": {
+        "id": "4b7c7cc36f67e2e2",
+        "owner": "aac7511730d02024",
+        "created_at": "2025-11-13T19:01:26.182909",
+        "transfer_history": []
+      },
+      "85d6d7c94ad485e2": {
+        "id": "85d6d7c94ad485e2",
+        "owner": "79bff7f15f99b280",
+        "created_at": "2025-11-13T19:03:02.025898",
+        "transfer_history": []
+      },
+      "5ea1d256166124b4": {
+        "id": "5ea1d256166124b4",
+        "owner": "79bff7f15f99b280",
+        "created_at": "2025-11-13T19:03:02.025898",
+        "transfer_history": []
+      },
+      "baa15f2389cf5c50": {
+        "id": "baa15f2389cf5c50",
+        "owner": "79bff7f15f99b280",
+        "created_at": "2025-11-13T19:03:02.025898",
+        "transfer_history": []
+      },
+      "1d2d5228033d4502": {
+        "id": "1d2d5228033d4502",
+        "owner": "79bff7f15f99b280",
+        "created_at": "2025-11-13T19:03:02.025898",
+        "transfer_history": []
+      },
+      "a08526856c934098": {
+        "id": "a08526856c934098",
+        "owner": "79bff7f15f99b280",
+        "created_at": "2025-11-13T19:03:02.026914",
+        "transfer_history": []
+      },
+      "c5de17969f11c71c": {
+        "id": "c5de17969f11c71c",
+        "owner": "5595a33ccd2b0c2d",
+        "created_at": "2025-11-13T19:05:44.594167",
+        "transfer_history": []
+      },
+      "5e920441d53fed46": {
+        "id": "5e920441d53fed46",
+        "owner": "5595a33ccd2b0c2d",
+        "created_at": "2025-11-13T19:05:44.594215",
+        "transfer_history": []
+      },
+      "cc605a3406911ce3": {
+        "id": "cc605a3406911ce3",
+        "owner": "5595a33ccd2b0c2d",
+        "created_at": "2025-11-13T19:05:44.594251",
+        "transfer_history": []
+      },
+      "badd8f6c865093d2": {
+        "id": "badd8f6c865093d2",
+        "owner": "5595a33ccd2b0c2d",
+        "created_at": "2025-11-13T19:05:44.594283",
+        "transfer_history": []
+      },
+      "3f9f00825ac37847": {
+        "id": "3f9f00825ac37847",
+        "owner": "5595a33ccd2b0c2d",
+        "created_at": "2025-11-13T19:05:44.594313",
+        "transfer_history": []
+      }
+    },
+    "asset_transfers": {
+      "5950369631d33289": {
+        "asset_id": "850c6eb13a35a298",
+        "from_wallet": "aac7511730d02024",
+        "to_wallet": "79bff7f15f99b280",
+        "price": 100,
+        "votes": {},
+        "created_at": "2025-11-13T19:04:13.125485",
+        "status": "pending",
+        "executed_at": null
+      },
+      "0dae4a10563d7de4": {
+        "asset_id": "989a37d79909b631",
+        "from_wallet": "aac7511730d02024",
+        "to_wallet": "79bff7f15f99b280",
+        "price": 200,
+        "votes": {},
+        "created_at": "2025-11-13T19:07:03.596512",
+        "status": "pending",
+        "executed_at": null
+      },
+      "193b10ebbf6df37f": {
+        "asset_id": "10a56fc7f9de5c2d",
+        "from_wallet": "79bff7f15f99b280",
+        "to_wallet": "aac7511730d02024",
+        "price": 100,
+        "votes": {},
+        "created_at": "2025-11-13T19:08:47.758102",
+        "status": "pending"
+      }
+    }
+  },
+  "last_updated": "2025-11-13T19:08:47.264883",
+  "mac_address": "unknown_mac",
+  "transaction_nonce": 0,
+  "is_first_node": false,
+  "is_authority_node": false,
+  "integrity_hash": "a1ece7128236bc1e6144bff67f8e7690a498adc1a761040809c46b54143a819b"
+}

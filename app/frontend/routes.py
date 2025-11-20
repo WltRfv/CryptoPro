@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, jsonify, flash, redirect,
 from flask_login import login_user, logout_user, current_user, login_required
 from app.backend.auth import auth_manager
 from app.backend.wallet_core import wallet_core
-from app.backend.database import Member, Team
+from app.backend.database import Member, Team, PublicKey
 
 bp = Blueprint('frontend', __name__)
 
@@ -15,44 +15,86 @@ def index():
 # app/frontend/routes.py - ИСПРАВЛЯЕМ team_login
 @bp.route('/team-login', methods=['GET', 'POST'])
 def team_login():
-    """Безопасный вход по цифровой подписи"""
-    challenge_message = None
-
+    """Безопасный вход по приватному ключу"""
     if request.method == 'POST':
-        # Если запрос на генерацию challenge
-        if 'generate_challenge' in request.form:
+        # Проверка приватного ключа
+        if 'verify_private_key' in request.form:
             member_name = request.form.get('member_name')
-            if member_name:
-                from app.backend.signature_auth import signature_auth
-                challenge_message = signature_auth.generate_secure_challenge(member_name)
-                if challenge_message:
-                    flash('Challenge сгенерирован! Подпишите его.', 'success')
-                else:
-                    flash('Участник не найден', 'error')
+            private_key = request.form.get('private_key')
 
-        # Если запрос на проверку подписи
-        elif 'verify_signature' in request.form:
-            member_name = request.form.get('member_name')
-            signature = request.form.get('signature')
-            challenge_message = request.form.get('challenge_message')
-
-            if not all([member_name, signature, challenge_message]):
+            if not all([member_name, private_key]):
                 flash('Заполните все поля', 'error')
+                return render_template('team_login.html')
+
+            # Проверяем приватный ключ
+            success, result = verify_private_key_login(member_name, private_key)
+
+            if success:
+                member = result
+                login_user(member)
+                flash(f'Безопасный вход выполнен, {member.name}!', 'success')
+                return redirect(url_for('frontend.dashboard', team_id=member.team_id))
             else:
-                from app.backend.signature_auth import signature_auth
-                success, result = signature_auth.verify_single_signature(
-                    member_name, signature, challenge_message
-                )
+                flash(result, 'error')
 
-                if success:
-                    member = result
-                    login_user(member)
-                    flash(f'Безопасный вход выполнен, {member.name}!', 'success')
-                    return redirect(url_for('frontend.dashboard', team_id=member.team_id))
-                else:
-                    flash(result, 'error')
+    return render_template('team_login.html')
 
-    return render_template('team_login.html', challenge_message=challenge_message)
+
+def verify_private_key_login(member_name, private_key_pem):
+    """Проверяет валидность приватного ключа через challenge-response"""
+    try:
+        print(f"🔐 Проверяем приватный ключ для: {member_name}")
+
+        # Находим участника
+        member = Member.query.filter_by(name=member_name).first()
+        if not member:
+            return False, "Участник не найден"
+
+        # Находим публичный ключ
+        public_key = PublicKey.query.filter_by(member_id=member.id).first()
+        if not public_key:
+            return False, "Публичный ключ не зарегистрирован"
+
+        # Генерируем уникальный challenge
+        import secrets
+        challenge = f"CRYPTOPRO_AUTH_{secrets.token_urlsafe(32)}"
+
+        # Пытаемся подписать challenge присланным ключом
+        from app.backend.rsa_manager import rsa_manager
+
+        try:
+            # Подписываем challenge
+            signature = rsa_manager.sign_message(private_key_pem, challenge)
+
+            if not signature:
+                return False, "Ошибка подписи - неверный формат ключа"
+
+            # Проверяем подпись через публичный ключ
+            is_valid = rsa_manager.verify_signature(
+                public_key.public_key,
+                challenge,
+                signature
+            )
+
+            if is_valid:
+                print(f"✅ Успешная проверка ключа для: {member.name}")
+
+                # НЕМЕДЛЕННО очищаем приватный ключ из памяти
+                import gc
+                del private_key_pem
+                gc.collect()
+
+                return True, member
+            else:
+                return False, "Неверный приватный ключ"
+
+        except Exception as e:
+            print(f"❌ Ошибка при работе с ключом: {e}")
+            return False, f"Ошибка формата ключа: {str(e)}"
+
+    except Exception as e:
+        print(f"❌ Системная ошибка: {e}")
+        return False, f"Системная ошибка: {str(e)}"
 
 
 @bp.route('/verify-keys', methods=['POST'])
